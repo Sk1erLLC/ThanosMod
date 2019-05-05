@@ -76,6 +76,8 @@ public class ThanosMod {
         if (entityRenderObject instanceof RendererLivingEntity) {
             ModelBase mainModel = ((RendererLivingEntity) entityRenderObject).getMainModel();
             for (ModelRenderer modelRenderer : mainModel.boxList) {
+                if(modelRenderer.isHidden)
+                    continue;
                 List<ModelBox> cubeList = modelRenderer.cubeList;
                 for (ModelBox modelBox : cubeList) {
                     for (TexturedQuad texturedQuad : modelBox.quadList) {
@@ -88,21 +90,32 @@ public class ThanosMod {
                         PositionTextureVertex endVertex = vertexPositions[1];
                         Vec3 start = startVertex.vector3D;
                         Vec3 end = endVertex.vector3D;
-                        PositionTextureVertex corner = vertexPositions[2];
                         Vec3 planeVectorOne = end.subtract(start);
                         Vec3 planeVectorTwo = vertexPositions[2].vector3D.subtract(vertexPositions[1].vector3D);
-                        for (float j = corner.texturePositionX; j < startVertex.texturePositionX; j += 1 / 64F) {
-                            for (float k = startVertex.texturePositionY; k < corner.texturePositionY; k += 1 / 64F) {
+
+                        float minX = 1;
+                        float maxX = 0;
+                        float minY = 1;
+                        float maxY = 0;
+
+                        for (PositionTextureVertex vertexPosition : vertexPositions) {
+                            minX = Math.min(minX, vertexPosition.texturePositionX);
+                            maxX = Math.max(maxX, vertexPosition.texturePositionX);
+                            minY = Math.min(minY, vertexPosition.texturePositionY);
+                            maxY = Math.max(maxY, vertexPosition.texturePositionY);
+                        }
+                        for (float j = minX; j < maxX; j += 1 / 64F) {
+                            for (float k = minY; k < maxY; k += 1 / 64F) {
                                 double baseX = thePlayer.posX;
-                                double baseY = thePlayer.posY + thePlayer.getEyeHeight();
+                                double baseY = thePlayer.posY;
                                 double baseZ = thePlayer.posZ;
                                 float workingPosX = modelRenderer.offsetX + modelRenderer.rotationPointX * scale;
                                 float workingPosY = modelRenderer.offsetY + modelRenderer.rotationPointY * scale;
                                 float workingPosZ = modelRenderer.offsetZ + modelRenderer.rotationPointZ * scale;
 
                                 Pos pos = new Pos(workingPosX, workingPosY, workingPosZ);
-                                float xInter = (j - corner.texturePositionX) / (startVertex.texturePositionX + corner.texturePositionX);
-                                float yInter = (k - startVertex.texturePositionY) / (startVertex.texturePositionY + corner.texturePositionY);
+                                float xInter = (j - minX) / (maxX);
+                                float yInter = (k - minY) / (maxY);
                                 pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
 
                                 pos.add((start.xCoord + planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter) * scale,
@@ -111,10 +124,17 @@ public class ThanosMod {
 
                                 pos.invert();
 
-                                spawnDustAtWithColor(thePlayer.worldObj, baseX + pos.x, baseY + pos.y, baseZ + pos.z, 255, 255, 255, 255);
+                                double x = baseX + pos.x;
+                                double y = baseY + pos.y;
+                                double z = baseZ + pos.z;
+                                Color color = new Color(Math.min((int) Math.abs(pos.x),255), Math.min(255,Math.abs((int)pos.y)), Math.min(255,Math.abs((int)pos.z)));
+                                spawnDustAtWithColor(thePlayer.worldObj, x, y, z, color.getRed(), color.getGreen(), color.getBlue(), 255);
                                 a++;
                             }
                         }
+                        System.out.println("Box: " + modelBox.boxName);
+                        System.out.println("Renderer: " + modelRenderer.boxName);
+                        return;
                     }
                 }
             }
