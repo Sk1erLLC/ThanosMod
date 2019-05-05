@@ -10,6 +10,7 @@ import net.minecraft.client.model.TexturedQuad;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RendererLivingEntity;
+import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
@@ -59,62 +60,67 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onRender(RenderPlayerEvent.Post event) {
-//        if (++i % 60 *5 != 0)
-//            return;
+        if (++i % 60 * 5 != 0)
+            return;
 
         Minecraft minecraft = Minecraft.getMinecraft();
         EntityPlayerSP thePlayer = (EntityPlayerSP) event.entityPlayer;
-        if (thePlayer != null) {
-            Minecraft.getMinecraft().getTextureManager().bindTexture(thePlayer.getLocationSkin());
-            Render<Entity> entityRenderObject = minecraft.getRenderManager().getEntityRenderObject(thePlayer);
-            if (entityRenderObject instanceof RendererLivingEntity) {
-                ModelBase mainModel = ((RendererLivingEntity) entityRenderObject).getMainModel();
-                for (ModelRenderer modelRenderer : mainModel.boxList) {
-                    List<ModelBox> cubeList = modelRenderer.cubeList;
-                    for (ModelBox modelBox : cubeList) {
-                        for (TexturedQuad texturedQuad : modelBox.quadList) {
+        int a = 0;
+        if (thePlayer == null) {
+            return;
+        }
+        ITextureObject texture = Minecraft.getMinecraft().getTextureManager().getTexture(thePlayer.getLocationSkin());
+        if (texture == null)
+            return;
+        Render<Entity> entityRenderObject = minecraft.getRenderManager().getEntityRenderObject(thePlayer);
+        if (entityRenderObject instanceof RendererLivingEntity) {
+            ModelBase mainModel = ((RendererLivingEntity) entityRenderObject).getMainModel();
+            for (ModelRenderer modelRenderer : mainModel.boxList) {
+                List<ModelBox> cubeList = modelRenderer.cubeList;
+                for (ModelBox modelBox : cubeList) {
+                    for (TexturedQuad texturedQuad : modelBox.quadList) {
 
-                            float scale = 0.0625F;
+                        float scale = 0.0625F;
 
-                            PositionTextureVertex[] vertexPositions = texturedQuad.vertexPositions;
+                        PositionTextureVertex[] vertexPositions = texturedQuad.vertexPositions;
 
-                            PositionTextureVertex startVertex = vertexPositions[2];
-                            PositionTextureVertex endVertex = vertexPositions[0];
-                            Vec3 start = startVertex.vector3D;
-                            Vec3 end = endVertex.vector3D;
+                        PositionTextureVertex startVertex = vertexPositions[0];
+                        PositionTextureVertex endVertex = vertexPositions[1];
+                        Vec3 start = startVertex.vector3D;
+                        Vec3 end = endVertex.vector3D;
+                        PositionTextureVertex corner = vertexPositions[2];
+                        Vec3 planeVectorOne = end.subtract(start);
+                        Vec3 planeVectorTwo = vertexPositions[2].vector3D.subtract(vertexPositions[1].vector3D);
+                        for (float j = corner.texturePositionX; j < startVertex.texturePositionX; j += 1 / 64F) {
+                            for (float k = startVertex.texturePositionY; k < corner.texturePositionY; k += 1 / 64F) {
+                                double baseX = thePlayer.posX;
+                                double baseY = thePlayer.posY + thePlayer.getEyeHeight();
+                                double baseZ = thePlayer.posZ;
+                                float workingPosX = modelRenderer.offsetX + modelRenderer.rotationPointX * scale;
+                                float workingPosY = modelRenderer.offsetY + modelRenderer.rotationPointY * scale;
+                                float workingPosZ = modelRenderer.offsetZ + modelRenderer.rotationPointZ * scale;
 
+                                Pos pos = new Pos(workingPosX, workingPosY, workingPosZ);
+                                float xInter = (j - corner.texturePositionX) / (startVertex.texturePositionX + corner.texturePositionX);
+                                float yInter = (k - startVertex.texturePositionY) / (startVertex.texturePositionY + corner.texturePositionY);
+                                pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
 
-                            Vec3 planeVectorOne = end.subtract(start).normalize();
-                            Vec3 planeVectorTwo = vertexPositions[1].vector3D.subtract(vertexPositions[3].vector3D).normalize();
+                                pos.add((start.xCoord + planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter) * scale,
+                                        (start.yCoord + planeVectorOne.yCoord * xInter + planeVectorTwo.yCoord * yInter) * scale,
+                                        (start.zCoord + planeVectorOne.zCoord * xInter + planeVectorTwo.zCoord * yInter) * scale);
 
+                                pos.invert();
 
-                            for (float j = startVertex.texturePositionX; j < endVertex.texturePositionX; j += 1 / 128F) {
-                                for (float k = startVertex.texturePositionY; k < endVertex.texturePositionY; k += 1 / 128F) {
-                                    double baseX = thePlayer.posX;
-                                    double baseY = thePlayer.posY+thePlayer.getEyeHeight();
-                                    double baseZ = thePlayer.posZ;
-                                    float workingPosX = modelRenderer.offsetX + modelRenderer.rotationPointX * scale;
-                                    float workingPosY = modelRenderer.offsetY + modelRenderer.rotationPointY * scale;
-                                    float workingPosZ = modelRenderer.offsetZ + modelRenderer.rotationPointZ * scale;
-
-                                    Pos pos = new Pos(workingPosX, workingPosY, workingPosZ);
-                                    float xInter = j / endVertex.texturePositionX;
-                                    float yInter = k / endVertex.texturePositionY;
-                                    pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
-
-                                    pos.add(planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter,
-                                            planeVectorOne.yCoord * xInter + planeVectorTwo.yCoord * yInter,
-                                            planeVectorOne.zCoord * xInter + planeVectorTwo.zCoord * yInter);
-
-                                    pos.invert();
-                                    spawnDustAtWithColor(thePlayer.worldObj, baseX + pos.x, baseY + pos.y, baseZ + pos.z, 255, 255, 255, 255);
-                                }
+                                spawnDustAtWithColor(thePlayer.worldObj, baseX + pos.x, baseY + pos.y, baseZ + pos.z, 255, 255, 255, 255);
+                                a++;
                             }
                         }
                     }
                 }
             }
+
         }
+        System.out.println(a);
     }
 
 

@@ -45,7 +45,6 @@ public class EntityThanosDustFX extends EntityFX {
             setDead();
         }
 
-        super.onUpdate();
     }
 
     @Override
