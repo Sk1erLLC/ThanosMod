@@ -83,27 +83,29 @@ public class ThanosMod {
                             Vec3 start = startVertex.vector3D;
                             Vec3 end = endVertex.vector3D;
 
-                            Vec3 planeVectorOne = start.subtract(end).normalize();
+
+                            Vec3 planeVectorOne = end.subtract(start).normalize();
                             Vec3 planeVectorTwo = vertexPositions[1].vector3D.subtract(vertexPositions[3].vector3D).normalize();
 
 
-                            for (float j = startVertex.texturePositionX; j < endVertex.texturePositionX; j += 1 / 64F) {
-                                for (float k = startVertex.texturePositionY; k < endVertex.texturePositionY; k += 1 / 64F) {
+                            for (float j = startVertex.texturePositionX; j < endVertex.texturePositionX; j += 1 / 128F) {
+                                for (float k = startVertex.texturePositionY; k < endVertex.texturePositionY; k += 1 / 128F) {
                                     double baseX = thePlayer.posX;
-                                    double baseY = thePlayer.posY;
+                                    double baseY = thePlayer.posY+thePlayer.getEyeHeight();
                                     double baseZ = thePlayer.posZ;
                                     float workingPosX = modelRenderer.offsetX + modelRenderer.rotationPointX * scale;
                                     float workingPosY = modelRenderer.offsetY + modelRenderer.rotationPointY * scale;
                                     float workingPosZ = modelRenderer.offsetZ + modelRenderer.rotationPointZ * scale;
 
                                     Pos pos = new Pos(workingPosX, workingPosY, workingPosZ);
-                                    pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
                                     float xInter = j / endVertex.texturePositionX;
                                     float yInter = k / endVertex.texturePositionY;
+                                    pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
 
-                                    pos.add(start.xCoord + planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter,
-                                            start.yCoord + planeVectorOne.yCoord * xInter + planeVectorTwo.yCoord * yInter,
-                                            start.zCoord + planeVectorOne.zCoord * xInter + planeVectorTwo.zCoord * yInter);
+                                    pos.add(planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter,
+                                            planeVectorOne.yCoord * xInter + planeVectorTwo.yCoord * yInter,
+                                            planeVectorOne.zCoord * xInter + planeVectorTwo.zCoord * yInter);
+
                                     pos.invert();
                                     spawnDustAtWithColor(thePlayer.worldObj, baseX + pos.x, baseY + pos.y, baseZ + pos.z, 255, 255, 255, 255);
                                 }
