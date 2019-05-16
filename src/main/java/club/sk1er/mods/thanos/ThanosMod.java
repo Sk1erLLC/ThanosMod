@@ -46,6 +46,12 @@ public class ThanosMod {
     private void generate() {
         partList.clear();
         partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 10, 10, 0)); //FrontOfFace
+        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 10, 10, 10, 10)); //BackOfHead
+        partList.add(new BodyPart(16, 0, 8, 8, 0, 9, 1, 10, 9, 11)); //Neck (shifted up and back 1)
+        partList.add(new BodyPart(8, 0, 8, 8, 0, 0, 0, 10, 0, 10)); //Top of head
+//        partList.add(new BodyPart(0, 8, 8, 8, 0, 1, 1, 0, 9, 9)); //Left
+//        partList.add(new BodyPart(0, 8, 8, 8, 0, 0, 0, 10, 0, 10)); //Right
+
 
     }
 
@@ -64,6 +70,8 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onRender(RenderPlayerEvent.Post event) {
+        if ((++i) % 500 != 0)
+            return;
         Minecraft minecraft = Minecraft.getMinecraft();
         EntityPlayer thePlayer = event.entityPlayer;
         if (thePlayer == null) {
@@ -109,8 +117,6 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void renderWorld(RenderWorldLastEvent event) {
-
-
         Tessellator instance = Tessellator.getInstance();
         WorldRenderer worldRenderer = instance.getWorldRenderer();
         for (DustBox dustBox : dustBoxes) {

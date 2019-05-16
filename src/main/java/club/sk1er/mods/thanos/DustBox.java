@@ -12,7 +12,7 @@ public class DustBox {
     private double prevPosX, prevPosY, prevPosZ;
     private int age;
 
-    public DustBox(float particleRed, float particleBlue, float particleGreen, float particleAlpha, double posX, double posY, double posZ) {
+    public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ) {
         this.particleRed = particleRed;
         this.particleBlue = particleBlue;
         this.particleGreen = particleGreen;
@@ -28,7 +28,7 @@ public class DustBox {
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
 
-        return age >= 5 * 20; //5 seocnds
+        return false; //5 seocnds
     }
 
     public void render(WorldRenderer worldRendererIn, float partialTicks) {
@@ -37,12 +37,17 @@ public class DustBox {
         double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) )) - renderManager.renderPosX;
         double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) )) - renderManager.renderPosY;
         double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) )) - renderManager.renderPosZ;
-        GlStateManager.disableCull();
         GlStateManager.pushMatrix();
-        GlStateManager.color(particleRed, particleGreen, particleBlue);
+        GlStateManager.disableCull();
+        GlStateManager.color(particleRed, particleGreen, particleBlue,1);
+        GlStateManager.disableBlend();
+//        System.out.println("particleRed = " + particleRed);
+//        System.out.println("particleGreen = " + particleGreen);
+//        System.out.println("particleBlue = " + particleBlue);
         GlStateManager.translate(f5, f6, f7);
-        double scale = 0.0625F * .75F;
+        double scale = 0.029F;
         GlStateManager.disableAlpha();
+        GlStateManager.disableTexture2D();
         GlStateManager.scale(scale, scale, scale);
         GL11.glBegin(GL11.GL_TRIANGLE_STRIP);
         GL11.glVertex3d(-1.f, 1.f, 1.f);
@@ -61,5 +66,8 @@ public class DustBox {
         GL11.glVertex3d(1.f, 1.f, -1.f);
         GL11.glEnd();
         GlStateManager.popMatrix();
+        GlStateManager.enableCull();
+        GlStateManager.enableTexture2D();
+
     }
 }
