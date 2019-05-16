@@ -45,11 +45,11 @@ public class ThanosMod {
 
     private void generate() {
         partList.clear();
-        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 10, 10, 0)); //FrontOfFace
-        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 10, 10, 10, 10)); //BackOfHead
-        partList.add(new BodyPart(16, 0, 8, 8, 0, 9, 1, 10, 9, 11)); //Neck (shifted up and back 1)
-        partList.add(new BodyPart(8, 0, 8, 8, 0, 0, 0, 10, 0, 10)); //Top of head
-//        partList.add(new BodyPart(0, 8, 8, 8, 0, 1, 1, 0, 9, 9)); //Left
+        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
+        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 8, 8, 8, 8)); //BackOfHead
+        partList.add(new BodyPart(16, 0, 8, 8, 0, 7, 1, 8, 7, 8)); //Neck (shifted up and back 1)
+        partList.add(new BodyPart(8, 0, 8, 8, 0, 0, 0, 8, 0, 8)); //Top of head
+        partList.add(new BodyPart(0, 8, 8, 8, 0, 8, 8, 0, 1, 1)); //Left
 //        partList.add(new BodyPart(0, 8, 8, 8, 0, 0, 0, 10, 0, 10)); //Right
 
 
@@ -70,7 +70,7 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onRender(RenderPlayerEvent.Post event) {
-        if ((++i) % 500 != 0)
+        if ((++i) % 50 != 0)
             return;
         Minecraft minecraft = Minecraft.getMinecraft();
         EntityPlayer thePlayer = event.entityPlayer;
@@ -93,7 +93,7 @@ public class ThanosMod {
                         int red = (rawColor >> 16) & 0xFF;
                         int green = (rawColor >> 8) & 0xFF;
                         int blue = (rawColor) & 0xFF;
-                        double scale = 0.0625F * .75F;
+                        double scale = 0.0625F;
 
                         Vec3 relCoords = bodyPart.getCoords(j, k);
                         createPixel(

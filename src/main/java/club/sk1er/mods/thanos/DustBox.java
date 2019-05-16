@@ -45,7 +45,7 @@ public class DustBox {
 //        System.out.println("particleGreen = " + particleGreen);
 //        System.out.println("particleBlue = " + particleBlue);
         GlStateManager.translate(f5, f6, f7);
-        double scale = 0.029F;
+        double scale = 0.0311F;
         GlStateManager.disableAlpha();
         GlStateManager.disableTexture2D();
         GlStateManager.scale(scale, scale, scale);
