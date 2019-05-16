@@ -47,9 +47,12 @@ public class ThanosMod {
         partList.clear();
         partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
         partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 8, 8, 8, 8)); //BackOfHead
-        partList.add(new BodyPart(16, 0, 8, 8, 0, 7, 1, 8, 7, 8)); //Neck (shifted up and back 1)
+        partList.add(new BodyPart(16, 0, 8, 7, 0, 7, 1, 8, 7, 8)); //Neck (shifted up and back 1)
         partList.add(new BodyPart(8, 0, 8, 8, 0, 0, 0, 8, 0, 8)); //Top of head
-        partList.add(new BodyPart(0, 8, 8, 8, 0, 8, 8, 0, 1, 1)); //Left
+        partList.add(new BodyPart(16, 9, 6, 7, 7, 7, 1, 7, 1, 7, 0, 0, 90)); //Left
+
+        //        partList.add(new BodyPart(16, 9, 6, 7, 0, 1, 7, 0, 7, 1)); //Left
+        //1,7 -> 7,0
 //        partList.add(new BodyPart(0, 8, 8, 8, 0, 0, 0, 10, 0, 10)); //Right
 
 
@@ -138,6 +141,9 @@ public class ThanosMod {
         private double endX;
         private double endY;
         private double endZ;
+        private float rotX = 0;
+        private float rotY = 0;
+        private float rotZ = 0;
 
         public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ) {
             this.texX = texX;
@@ -150,6 +156,13 @@ public class ThanosMod {
             this.endX = endX;
             this.endY = endY;
             this.endZ = endZ;
+        }
+
+        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ, float rotx, float roty, float rotz) {
+            this(texX, texY, width, height, startX, startY, startZ, endX, endY, endZ);
+            this.rotX = rotx;
+            this.rotY = roty;
+            this.rotZ = rotz;
         }
 
         //Translate x and y texture coords into real 3d coords
@@ -170,14 +183,18 @@ public class ThanosMod {
                 newY = startY + (endY - startY) * (texTwo / width);
                 newZ = startZ;
             }
-            return new Vec3(-newX, -newY, -newZ);
+            Pos pos = new Pos(newX, newY, newZ);
+            System.out.println(pos.toString());
+            pos.rotate((float) Math.toRadians(rotX), (float) Math.toRadians(rotY), (float) Math.toRadians(rotZ));
+            System.out.println(pos.toString());
+            return new Vec3(-pos.x, -pos.y, -pos.z);
         }
     }
 
     class Pos {
-        float x, y, z;
+        double x, y, z;
 
-        public Pos(float x, float y, float z) {
+        public Pos(double x, double y, double z) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -185,29 +202,39 @@ public class ThanosMod {
 
         public void rotate(float rotateAngleX, float rotateAngleY, float rotateAngleZ) {
             if (rotateAngleX != 0) {
-                float tx = x;
-                float ty = y;
-                float tz = z;
+                double tx = x;
+                double ty = y;
+                double tz = z;
                 x = tx * MathHelper.cos(rotateAngleX) - ty * MathHelper.sin(rotateAngleX);
                 y = tx * MathHelper.sin(rotateAngleX) + ty * MathHelper.cos(rotateAngleX);
                 z = tz;
             }
             if (rotateAngleY != 0) {
-                float tx = x;
-                float ty = y;
-                float tz = z;
+                double tx = x;
+                double ty = y;
+                double tz = z;
                 x = tx * MathHelper.cos(rotateAngleY) + tz * MathHelper.sin(rotateAngleY);
                 y = ty;
                 z = -tx * MathHelper.sin(rotateAngleY) + tz * MathHelper.cos(rotateAngleY);
             }
+            System.out.println("ROT Z" + ": " + rotateAngleZ);
             if (rotateAngleZ != 0) {
-                float tx = x;
-                float ty = y;
-                float tz = z;
+                double tx = x;
+                double ty = y;
+                double tz = z;
                 x = tx;
-                y = ty * MathHelper.cos(rotateAngleX) - tz * MathHelper.sin(rotateAngleX);
-                z = ty * MathHelper.sin(rotateAngleX) + tz * MathHelper.cos(rotateAngleX);
+                y = ty * MathHelper.cos(rotateAngleZ) - tz * MathHelper.sin(rotateAngleZ);
+                z = ty * MathHelper.sin(rotateAngleZ) + tz * MathHelper.cos(rotateAngleZ);
             }
+        }
+
+        @Override
+        public String toString() {
+            return "Pos{" +
+                    "x=" + x +
+                    ", y=" + y +
+                    ", z=" + z +
+                    '}';
         }
 
         public void add(double xCoord, double yCoord, double zCoord) {
