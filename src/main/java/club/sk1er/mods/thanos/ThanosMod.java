@@ -1,21 +1,18 @@
 package club.sk1er.mods.thanos;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelBox;
-import net.minecraft.client.model.ModelRenderer;
-import net.minecraft.client.model.PositionTextureVertex;
-import net.minecraft.client.model.TexturedQuad;
-import net.minecraft.client.particle.EffectRenderer;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RendererLivingEntity;
-import net.minecraft.client.renderer.texture.ITextureObject;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
-import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -23,17 +20,20 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
-import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 @Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
 public class ThanosMod {
     public static final String MODID = "thanosmod";
     public static final String VERSION = "1.0";
-
-
     public static ThanosMod instance;
+    private List<BodyPart> partList = new ArrayList<>();
     private int i = 0;
+    private List<DustBox> dustBoxes = new ArrayList<>();
 
     public ThanosMod() {
         instance = this;
@@ -43,110 +43,129 @@ public class ThanosMod {
         instance.remove(entity);
     }
 
-    public void remove(Entity entity) {
-        World entityWorld = entity.getEntityWorld();
+    private void generate() {
+        partList.clear();
+        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 10, 10, 0)); //FrontOfFace
 
     }
 
-    private void spawnDustAtWithColor(World world, double x, double y, double z, int red, int green, int blue, int alpha) {
-        EffectRenderer effectRenderer = Minecraft.getMinecraft().effectRenderer;
-        effectRenderer.addEffect(new EntityThanosDustFX(world, x, y, z, new Color(red, green, blue, alpha)));
+    public void remove(Entity entity) {
+        //TODO implement
+    }
+
+    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha) {
+        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z));
     }
 
     @SubscribeEvent
-    public void onTick(TickEvent event) {
-
+    public void onTick(TickEvent.ClientTickEvent event) {
+        dustBoxes.removeIf(DustBox::onUpdate);
     }
 
     @SubscribeEvent
     public void onRender(RenderPlayerEvent.Post event) {
-        if (++i % 60 * 5 != 0)
-            return;
-
         Minecraft minecraft = Minecraft.getMinecraft();
-        EntityPlayerSP thePlayer = (EntityPlayerSP) event.entityPlayer;
-        int a = 0;
+        EntityPlayer thePlayer = event.entityPlayer;
         if (thePlayer == null) {
             return;
         }
-        ITextureObject texture = Minecraft.getMinecraft().getTextureManager().getTexture(thePlayer.getLocationSkin());
-        if (texture == null)
-            return;
-        Render<Entity> entityRenderObject = minecraft.getRenderManager().getEntityRenderObject(thePlayer);
-        if (entityRenderObject instanceof RendererLivingEntity) {
-            ModelBase mainModel = ((RendererLivingEntity) entityRenderObject).getMainModel();
-            for (ModelRenderer modelRenderer : mainModel.boxList) {
-                if(modelRenderer.isHidden)
-                    continue;
-                List<ModelBox> cubeList = modelRenderer.cubeList;
-                for (ModelBox modelBox : cubeList) {
-                    for (TexturedQuad texturedQuad : modelBox.quadList) {
 
-                        float scale = 0.0625F;
+        generate(); //TODO remove
+        ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
+        InputStream inputstream = null;
+        IResource iresource = null;
+        try {
+            iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
+            inputstream = iresource.getInputStream();
+            BufferedImage bufferedimage = TextureUtil.readBufferedImage(inputstream);
+            for (BodyPart bodyPart : partList) {
+                for (int j = 0; j < bodyPart.width; j++) {
+                    for (int k = 0; k < bodyPart.height; k++) {
+                        int rawColor = bufferedimage.getRGB(bodyPart.texX + j, bodyPart.texY + k);
+                        int red = (rawColor >> 16) & 0xFF;
+                        int green = (rawColor >> 8) & 0xFF;
+                        int blue = (rawColor) & 0xFF;
+                        double scale = 0.0625F * .75F;
 
-                        PositionTextureVertex[] vertexPositions = texturedQuad.vertexPositions;
-
-                        PositionTextureVertex startVertex = vertexPositions[0];
-                        PositionTextureVertex endVertex = vertexPositions[1];
-                        Vec3 start = startVertex.vector3D;
-                        Vec3 end = endVertex.vector3D;
-                        Vec3 planeVectorOne = end.subtract(start);
-                        Vec3 planeVectorTwo = vertexPositions[2].vector3D.subtract(vertexPositions[1].vector3D);
-
-                        float minX = 1;
-                        float maxX = 0;
-                        float minY = 1;
-                        float maxY = 0;
-
-                        for (PositionTextureVertex vertexPosition : vertexPositions) {
-                            minX = Math.min(minX, vertexPosition.texturePositionX);
-                            maxX = Math.max(maxX, vertexPosition.texturePositionX);
-                            minY = Math.min(minY, vertexPosition.texturePositionY);
-                            maxY = Math.max(maxY, vertexPosition.texturePositionY);
-                        }
-                        for (float j = minX; j < maxX; j += 1 / 64F) {
-                            for (float k = minY; k < maxY; k += 1 / 64F) {
-                                double baseX = thePlayer.posX;
-                                double baseY = thePlayer.posY;
-                                double baseZ = thePlayer.posZ;
-                                float workingPosX = modelRenderer.offsetX + modelRenderer.rotationPointX * scale;
-                                float workingPosY = modelRenderer.offsetY + modelRenderer.rotationPointY * scale;
-                                float workingPosZ = modelRenderer.offsetZ + modelRenderer.rotationPointZ * scale;
-
-                                Pos pos = new Pos(workingPosX, workingPosY, workingPosZ);
-                                float xInter = (j - minX) / (maxX);
-                                float yInter = (k - minY) / (maxY);
-                                pos.rotate(modelRenderer.rotateAngleX, modelRenderer.rotateAngleY, modelRenderer.rotateAngleZ);
-
-                                pos.add((start.xCoord + planeVectorOne.xCoord * xInter + planeVectorTwo.xCoord * yInter) * scale,
-                                        (start.yCoord + planeVectorOne.yCoord * xInter + planeVectorTwo.yCoord * yInter) * scale,
-                                        (start.zCoord + planeVectorOne.zCoord * xInter + planeVectorTwo.zCoord * yInter) * scale);
-
-                                pos.invert();
-
-                                double x = baseX + pos.x;
-                                double y = baseY + pos.y;
-                                double z = baseZ + pos.z;
-                                Color color = new Color(Math.min((int) Math.abs(pos.x),255), Math.min(255,Math.abs((int)pos.y)), Math.min(255,Math.abs((int)pos.z)));
-                                spawnDustAtWithColor(thePlayer.worldObj, x, y, z, color.getRed(), color.getGreen(), color.getBlue(), 255);
-                                a++;
-                            }
-                        }
-                        System.out.println("Box: " + modelBox.boxName);
-                        System.out.println("Renderer: " + modelRenderer.boxName);
-                        return;
+                        Vec3 relCoords = bodyPart.getCoords(j, k);
+                        createPixel(
+                                thePlayer.posX + relCoords.xCoord * scale,
+                                thePlayer.posY + relCoords.yCoord * scale,
+                                thePlayer.posZ + relCoords.zCoord * scale,
+                                red,
+                                green,
+                                blue,
+                                255);
                     }
                 }
             }
 
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        System.out.println(a);
+
+
     }
 
+    @SubscribeEvent
+    public void renderWorld(RenderWorldLastEvent event) {
+
+
+        Tessellator instance = Tessellator.getInstance();
+        WorldRenderer worldRenderer = instance.getWorldRenderer();
+        for (DustBox dustBox : dustBoxes) {
+            dustBox.render(worldRenderer, event.partialTicks);
+        }
+    }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+    }
+
+    class BodyPart {
+        private int texX, texY, width, height; //Texture locations in MC skin
+
+        private double startX;
+        private double startY;
+        private double startZ;
+        private double endX;
+        private double endY;
+        private double endZ;
+
+        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ) {
+            this.texX = texX;
+            this.texY = texY;
+            this.width = width;
+            this.height = height;
+            this.startX = startX;
+            this.startY = startY;
+            this.startZ = startZ;
+            this.endX = endX;
+            this.endY = endY;
+            this.endZ = endZ;
+        }
+
+        //Translate x and y texture coords into real 3d coords
+        public Vec3 getCoords(double texOne, double texTwo) {
+            double newX;
+            double newY;
+            double newZ;
+            if (startX == endX) {
+                newX = startX;
+                newY = startY + (endY - startY) * (texOne / width);
+                newZ = startZ + (endZ - startZ) * (texTwo / height);
+            } else if (startY == endY) {
+                newX = startX + (endX - startX) * (texOne / width);
+                newY = startY;
+                newZ = startZ + (endZ - startZ) * (texTwo / height);
+            } else {
+                newX = startX + (endX - startX) * (texOne / width);
+                newY = startY + (endY - startY) * (texTwo / width);
+                newZ = startZ;
+            }
+            return new Vec3(-newX, -newY, -newZ);
+        }
     }
 
     class Pos {

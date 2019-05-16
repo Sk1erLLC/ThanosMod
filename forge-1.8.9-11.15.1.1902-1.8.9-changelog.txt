@@ -2211,7 +2211,7 @@ Build 1.8-11.14.3.1507:
 Build 1.8-11.14.3.1506:
 	cpw:
 		More cleanup of the default eclipse workspace. The project is now called "MDKExample" not "Minecraft".
-		The project tree is now contemporary, instead of a copy from 1.5.x era MC. The launches are cleaned up, and refer to
+		The project tree is now contemporary, instead of a copy from 1.5.posX era MC. The launches are cleaned up, and refer to
 		a better default "runDir" of "run" rather than "eclipse".. Updating to FG2.0.1 which will contain relevant binary fixes.
 
 Build 1.8-11.14.3.1505:
@@ -3412,7 +3412,7 @@ Build 1.8-11.14.0.1296:
 		Initial update to 1.8, Super beta. Most rendering related hooks are out due to major changes in 1.8.
 		
 		Some notes:
-		Almost all int x, int y, int z parameters have been changed to BlockPos class
+		Almost all int posX, int posY, int posZ parameters have been changed to BlockPos class
 		ForgeDirection has been removed, replaced by net.minecraft.util.EnumFacing.
 		All FML classes have moved from packet cpw.mods.fml to net.minecraftforge.fml
 		Fluid Rendering has been disabled for the time being, to be re-evaulated and a test mod created for it.
@@ -4678,7 +4678,7 @@ Build 1.7.2-10.12.1.1066:
 	lhb:
 		Fix for Block.getExplosionResistance getting passed the wrong parameters
 		
-		It is being sent the x, x, y coordinates instead of x, y, z
+		It is being sent the posX, posX, posY coordinates instead of posX, posY, posZ
 
 Build 1.7.2-10.12.1.1065:
 	CovertJaguar:
@@ -5948,7 +5948,7 @@ Build 1.6.2-9.10.0.817:
 	cpw: Fix names for water/lava fluids. Closes #689
 	cpw:
 		Add support for loading legacy liquid stacks as new fluid stacks.
-		Requires having been written with the "liquidname" code from forge 1.5.x
+		Requires having been written with the "liquidname" code from forge 1.5.posX
 	cpw:
 		Add a translation map for looking up legacy liquid names to convert
 		to new fluid names.
@@ -6012,7 +6012,7 @@ Build 1.6.2-9.10.0.807-miscchanges:
 Build 1.6.2-9.10.0.806-miscchanges:
 	cpw:
 		Add support for loading legacy liquid stacks as new fluid stacks.
-		Requires having been written with the "liquidname" code from forge 1.5.x
+		Requires having been written with the "liquidname" code from forge 1.5.posX
 
 Build 1.6.2-9.10.0.804:
 	copyboy: Fix getArmorTexture by passing it the subtype
@@ -6617,7 +6617,7 @@ Build 1.5.2-7.8.0.704:
 	LexManos: Fixed render count for stacks of blocks 40+ and distrabution of items based on scale. Closes #579
 
 Build 1.5.2-7.8.0.703:
-	Christian: Remember x & z passed to getTopSolidOrLiquidBlock and use it for foliage tests. Fixes #575
+	Christian: Remember posX & posZ passed to getTopSolidOrLiquidBlock and use it for foliage tests. Fixes #575
 
 Build 1.5.2-7.8.0.702:
 	Christian: Fix blending on the hotbar. Closes #574
@@ -8294,7 +8294,7 @@ Build 1.4.5-6.4.1.403:
 		generation at greater heights than 127.
 	xcompwiz: Fixes some weird formatting
 	zach:
-		Fixes ordering for z & x loops (proper array increment order)
+		Fixes ordering for posZ & posX loops (proper array increment order)
 		
 		The ordering before would skip about in the ids and metadata arrays.  This runs linearly and should improve performance.
 		Done live on github
@@ -9731,7 +9731,7 @@ Build 3.1.2.95:
 		Includes basuic AudioMod compatibility.
 
 Build 3.1.2.94:
-	LexManos: Fixed vinella bugs when trying to access chunk information with a y < 0
+	LexManos: Fixed vinella bugs when trying to access chunk information with a posY < 0
 
 Build 3.1.2.93:
 	LexManos: Updated to FML build #73
