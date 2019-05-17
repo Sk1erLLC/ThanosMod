@@ -46,10 +46,11 @@ public class ThanosMod {
     private void generate() {
         partList.clear();
         partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
-        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 8, 8, 8, 8)); //BackOfHead
-        partList.add(new BodyPart(16, 0, 8, 7, 0, 7, 1, 8, 7, 8)); //Neck (shifted up and back 1)
-        partList.add(new BodyPart(8, 0, 8, 8, 0, 0, 0, 8, 0, 8)); //Top of head
-        partList.add(new BodyPart(16, 9, 6, 7, 7, 7, 1, 7, 1, 7, 0, 0, 90)); //Left
+        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8)); //BackOfHead
+        partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7)); //Top of head
+        partList.add(new BodyPart(16, 1, 8, 6, 0, 7, 1, 8, 7, 7)); //Neck
+        partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7)); //Left
+        partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0)); //Right
 
         //        partList.add(new BodyPart(16, 9, 6, 7, 0, 1, 7, 0, 7, 1)); //Left
         //1,7 -> 7,0
@@ -172,8 +173,8 @@ public class ThanosMod {
             double newZ;
             if (startX == endX) {
                 newX = startX;
-                newY = startY + (endY - startY) * (texOne / width);
-                newZ = startZ + (endZ - startZ) * (texTwo / height);
+                newY = startY + (endY - startY) * (texTwo / width);
+                newZ = startZ + (endZ - startZ) * (texOne / height);
             } else if (startY == endY) {
                 newX = startX + (endX - startX) * (texOne / width);
                 newY = startY;
@@ -184,9 +185,7 @@ public class ThanosMod {
                 newZ = startZ;
             }
             Pos pos = new Pos(newX, newY, newZ);
-            System.out.println(pos.toString());
             pos.rotate((float) Math.toRadians(rotX), (float) Math.toRadians(rotY), (float) Math.toRadians(rotZ));
-            System.out.println(pos.toString());
             return new Vec3(-pos.x, -pos.y, -pos.z);
         }
     }
