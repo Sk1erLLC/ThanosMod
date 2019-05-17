@@ -1,6 +1,7 @@
 package club.sk1er.mods.thanos;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureUtil;
@@ -45,6 +46,11 @@ public class ThanosMod {
 
     private void generate() {
         partList.clear();
+
+        //These next two dozen lines of code represent hours of pain
+
+
+        //HEAD
         partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
         partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8)); //BackOfHead
         partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7)); //Top of head
@@ -52,9 +58,15 @@ public class ThanosMod {
         partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7)); //Left
         partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0)); //Right
 
-        //        partList.add(new BodyPart(16, 9, 6, 7, 0, 1, 7, 0, 7, 1)); //Left
-        //1,7 -> 7,0
-//        partList.add(new BodyPart(0, 8, 8, 8, 0, 0, 0, 10, 0, 10)); //Right
+
+        //TORSO
+        partList.add(new BodyPart(20, 20, 8, 12, 7, 8, 2, -1, 20, 2)); //Front
+        partList.add(new BodyPart(32, 20, 8, 12, 0, 8, 5, 8, 20, 5)); //Back
+        partList.add(new BodyPart(29, 21, 2, 10, 0, 9, 3, 0, 19, 5)); //Left
+        partList.add(new BodyPart(17, 21, 2, 10, 7, 9, 4, 7, 19, 2)); //Right
+        partList.add(new BodyPart(20, 16, 8, 2, 0, 8, 3, 8, 8, 5)); //Top
+        partList.add(new BodyPart(28, 16, 8, 2, 0, 19, 3, 8, 19, 5)); //Bottom
+
 
 
     }
@@ -76,6 +88,7 @@ public class ThanosMod {
     public void onRender(RenderPlayerEvent.Post event) {
         if ((++i) % 50 != 0)
             return;
+        dustBoxes.clear();
         Minecraft minecraft = Minecraft.getMinecraft();
         EntityPlayer thePlayer = event.entityPlayer;
         if (thePlayer == null) {
@@ -121,11 +134,14 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void renderWorld(RenderWorldLastEvent event) {
+        GlStateManager.pushMatrix();
+        GlStateManager.translate(.3, 1.8, .3);
         Tessellator instance = Tessellator.getInstance();
         WorldRenderer worldRenderer = instance.getWorldRenderer();
         for (DustBox dustBox : dustBoxes) {
             dustBox.render(worldRenderer, event.partialTicks);
         }
+        GlStateManager.popMatrix();
     }
 
     @EventHandler
@@ -173,15 +189,15 @@ public class ThanosMod {
             double newZ;
             if (startX == endX) {
                 newX = startX;
-                newY = startY + (endY - startY) * (texTwo / width);
-                newZ = startZ + (endZ - startZ) * (texOne / height);
+                newY = startY + (endY - startY) * (texTwo / height);
+                newZ = startZ + (endZ - startZ) * (texOne / width);
             } else if (startY == endY) {
                 newX = startX + (endX - startX) * (texOne / width);
                 newY = startY;
                 newZ = startZ + (endZ - startZ) * (texTwo / height);
             } else {
                 newX = startX + (endX - startX) * (texOne / width);
-                newY = startY + (endY - startY) * (texTwo / width);
+                newY = startY + (endY - startY) * (texTwo / height);
                 newZ = startZ;
             }
             Pos pos = new Pos(newX, newY, newZ);
@@ -216,7 +232,6 @@ public class ThanosMod {
                 y = ty;
                 z = -tx * MathHelper.sin(rotateAngleY) + tz * MathHelper.cos(rotateAngleY);
             }
-            System.out.println("ROT Z" + ": " + rotateAngleZ);
             if (rotateAngleZ != 0) {
                 double tx = x;
                 double ty = y;
