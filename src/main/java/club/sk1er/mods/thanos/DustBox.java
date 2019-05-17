@@ -10,9 +10,12 @@ public class DustBox {
     private float particleRed, particleBlue, particleGreen, particleAlpha;
     private double posX, posY, posZ;
     private double prevPosX, prevPosY, prevPosZ;
+    private double origPosX;
+    private double origPosY;
+    private double origPosZ;
     private int age;
 
-    public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ) {
+    public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ, double origPosX, double origPosY, double origPosZ) {
         this.particleRed = particleRed;
         this.particleBlue = particleBlue;
         this.particleGreen = particleGreen;
@@ -20,6 +23,9 @@ public class DustBox {
         this.posX = posX;
         this.posY = posY;
         this.posZ = posZ;
+        this.origPosX = origPosX;
+        this.origPosY = origPosY;
+        this.origPosZ = origPosZ;
     }
 
     public boolean onUpdate() {
@@ -34,12 +40,12 @@ public class DustBox {
     public void render(WorldRenderer worldRendererIn, float partialTicks) {
         float f4 = 0.1F * 3;
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-        double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) )) - renderManager.renderPosX;
-        double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) )) - renderManager.renderPosY;
-        double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) )) - renderManager.renderPosZ;
+        double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX))) - renderManager.renderPosX;
+        double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY))) - renderManager.renderPosY;
+        double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ))) - renderManager.renderPosZ;
         GlStateManager.pushMatrix();
         GlStateManager.disableCull();
-        GlStateManager.color(particleRed, particleGreen, particleBlue,1);
+        GlStateManager.color(particleRed, particleGreen, particleBlue, 1);
         GlStateManager.disableBlend();
 //        System.out.println("particleRed = " + particleRed);
 //        System.out.println("particleGreen = " + particleGreen);

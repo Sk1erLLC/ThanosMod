@@ -38,6 +38,7 @@ public class ThanosMod {
 
     public ThanosMod() {
         instance = this;
+        generate();
     }
 
     public static void onEntityRemoved(Entity entity) {
@@ -51,22 +52,56 @@ public class ThanosMod {
 
 
         //HEAD
-        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
-        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8)); //BackOfHead
-        partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7)); //Top of head
-        partList.add(new BodyPart(16, 1, 8, 6, 0, 7, 1, 8, 7, 7)); //Neck
-        partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7)); //Left
-        partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0)); //Right
+        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0,0)); //FrontOfFace
+        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8,0)); //BackOfHead
+        partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7,0)); //Top of head
+        partList.add(new BodyPart(16, 1, 8, 6, 0, 7, 1, 8, 7, 7,0)); //Neck
+        partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7,0)); //Left
+        partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0,0)); //Right
 
 
         //TORSO
-        partList.add(new BodyPart(20, 20, 8, 12, 7, 8, 2, -1, 20, 2)); //Front
-        partList.add(new BodyPart(32, 20, 8, 12, 0, 8, 5, 8, 20, 5)); //Back
-        partList.add(new BodyPart(29, 21, 2, 10, 0, 9, 3, 0, 19, 5)); //Left
-        partList.add(new BodyPart(17, 21, 2, 10, 7, 9, 4, 7, 19, 2)); //Right
-        partList.add(new BodyPart(20, 16, 8, 2, 0, 8, 3, 8, 8, 5)); //Top
-        partList.add(new BodyPart(28, 16, 8, 2, 0, 19, 3, 8, 19, 5)); //Bottom
+        partList.add(new BodyPart(20, 20, 8, 12, 7, 8, 2, -1, 20, 2,1)); //Front
+        partList.add(new BodyPart(32, 20, 8, 12, 0, 8, 5, 8, 20, 5,1)); //Back
+        partList.add(new BodyPart(29, 21, 2, 10, 0, 9, 3, 0, 19, 5,1)); //Left
+        partList.add(new BodyPart(17, 21, 2, 10, 7, 9, 4, 7, 19, 2,1)); //Right
+        partList.add(new BodyPart(20, 16, 8, 2, 0, 8, 3, 8, 8, 5,1)); //Top
+        partList.add(new BodyPart(28, 16, 8, 2, 0, 19, 3, 8, 19, 5,1)); //Bottom
 
+
+        //RIGHT LEG
+        partList.add(new BodyPart(4, 20, 4, 12, 7, 20, 2, 3, 32, 2,5)); //Front
+        partList.add(new BodyPart(12, 20, 4, 12, 7, 20, 5, 3, 32, 5,5)); //Back
+        partList.add(new BodyPart(8, 20, 2, 12, 4, 20, 3, 4, 32, 5,5)); //Left
+        partList.add(new BodyPart(0, 20, 2, 12, 7, 20, 3, 7, 32, 5,5)); //Right
+        partList.add(new BodyPart(8, 16, 2, 2, 5, 31, 3, 7, 31, 5,5)); //Bottom
+//
+
+
+        //LEFT LEG
+        partList.add(new BodyPart(20, 52, 4, 12, 3, 20, 2, -1, 32, 2,4)); //Front
+        partList.add(new BodyPart(28, 52, 4, 12, 3, 20, 5, -1, 32, 5,4)); //Back
+        partList.add(new BodyPart(30, 52, 2, 12, 0, 20, 3, 0, 32, 5,4)); //Left
+        partList.add(new BodyPart(22, 52, 2, 12, 3, 20, 3, 3, 32, 5,4)); //Right
+        partList.add(new BodyPart(24, 50, 2, 2, 1, 31, 3, 3, 31, 5,4)); //Bottom
+
+
+        //RIGHT ARM
+        partList.add(new BodyPart(36 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 2, 3 + 4, 32 - 12, 2,3)); //Front
+        partList.add(new BodyPart(44 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 5, 3 + 4, 32 - 12, 5,3)); //Back
+        partList.add(new BodyPart(46 + 8, 52 - 12 - 16 - 4, 2, 12, 4 + 4, 8, 3, 4 + 4, 32 - 12, 5,3)); //Left
+        partList.add(new BodyPart(38 + 8, 52 - 12 - 16 - 4, 2, 12, 7 + 4, 8, 3, 7 + 4, 32 - 12, 5,3)); //Right
+        partList.add(new BodyPart(40 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 19, 3, 7 + 4, 31 - 12, 5,3)); //Bottom
+        partList.add(new BodyPart(36 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 8, 3, 7 + 4, 8, 5,3)); //Top
+
+
+        //LEFT ARM
+        partList.add(new BodyPart(36, 52, 4, 12, 7 - 8, 8, 2, 3 - 8, 32 - 12, 2,2)); //Front
+        partList.add(new BodyPart(44, 52, 4, 12, 7 - 8, 8, 5, 3 - 8, 32 - 12, 5,2)); //Back
+        partList.add(new BodyPart(46, 52, 2, 12, 4 - 8, 8, 3, 4 - 8, 32 - 12, 5,2)); //Left
+        partList.add(new BodyPart(38, 52, 2, 12, 7 - 8, 8, 3, 7 - 8, 32 - 12, 5,2)); //Right
+        partList.add(new BodyPart(40, 50, 2, 2, 5 - 8, 19, 3, 7 - 8, 31 - 12, 5,2)); //Bottom
+        partList.add(new BodyPart(36, 50, 2, 2, 5 - 8, 8, 3, 7 - 8, 8, 5,2)); //Top
 
 
     }
@@ -75,8 +110,8 @@ public class ThanosMod {
         //TODO implement
     }
 
-    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha) {
-        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z));
+    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ) {
+        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ));
     }
 
     @SubscribeEvent
@@ -86,8 +121,8 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onRender(RenderPlayerEvent.Post event) {
-        if ((++i) % 50 != 0)
-            return;
+//        if ((++i) % 50 != 0)
+//            return;
         dustBoxes.clear();
         Minecraft minecraft = Minecraft.getMinecraft();
         EntityPlayer thePlayer = event.entityPlayer;
@@ -95,7 +130,6 @@ public class ThanosMod {
             return;
         }
 
-        generate(); //TODO remove
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
         IResource iresource = null;
@@ -113,14 +147,22 @@ public class ThanosMod {
                         double scale = 0.0625F;
 
                         Vec3 relCoords = bodyPart.getCoords(j, k);
+                        double xCoord = relCoords.xCoord;
+                        double yCoord = relCoords.yCoord;
+                        double zCoord = relCoords.zCoord;
+                        //Adjust because our model system is centered around top left of head and we want to center around center of chest
+                        //Negative because coords are are mult by *-1 cause MC
                         createPixel(
-                                thePlayer.posX + relCoords.xCoord * scale,
-                                thePlayer.posY + relCoords.yCoord * scale,
-                                thePlayer.posZ + relCoords.zCoord * scale,
+                                thePlayer.posX + xCoord * scale + .22,
+                                thePlayer.posY + yCoord * scale + 1.95,
+                                thePlayer.posZ + zCoord * scale + .22,
                                 red,
                                 green,
                                 blue,
-                                255);
+                                255,
+                                xCoord + .22,
+                                yCoord + 1.95,
+                                zCoord + .22);
                     }
                 }
             }
@@ -135,7 +177,6 @@ public class ThanosMod {
     @SubscribeEvent
     public void renderWorld(RenderWorldLastEvent event) {
         GlStateManager.pushMatrix();
-        GlStateManager.translate(.3, 1.8, .3);
         Tessellator instance = Tessellator.getInstance();
         WorldRenderer worldRenderer = instance.getWorldRenderer();
         for (DustBox dustBox : dustBoxes) {
@@ -161,8 +202,8 @@ public class ThanosMod {
         private float rotX = 0;
         private float rotY = 0;
         private float rotZ = 0;
-
-        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ) {
+        private BodyPartLocation location;
+        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ, int part) {
             this.texX = texX;
             this.texY = texY;
             this.width = width;
@@ -173,14 +214,10 @@ public class ThanosMod {
             this.endX = endX;
             this.endY = endY;
             this.endZ = endZ;
+            location = BodyPartLocation.values()[part];
         }
 
-        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ, float rotx, float roty, float rotz) {
-            this(texX, texY, width, height, startX, startY, startZ, endX, endY, endZ);
-            this.rotX = rotx;
-            this.rotY = roty;
-            this.rotZ = rotz;
-        }
+
 
         //Translate x and y texture coords into real 3d coords
         public Vec3 getCoords(double texOne, double texTwo) {
@@ -262,5 +299,13 @@ public class ThanosMod {
             this.y = -y;
             this.z = -z;
         }
+    }
+    enum BodyPartLocation {
+        HEAD,
+        BODY,
+        LEFT_ARM,
+        RIGHT_ARM,
+        LEFT_FOOT,
+        RIGHT_FOOT;
     }
 }
