@@ -10,6 +10,7 @@ public class DustBox {
     private float particleRed, particleBlue, particleGreen, particleAlpha;
     private double posX, posY, posZ;
     private double prevPosX, prevPosY, prevPosZ;
+    private double initialPosX, initialPosY, initialPosZ;
     private double origPosX;
     private double origPosY;
     private double origPosZ;
@@ -23,6 +24,9 @@ public class DustBox {
         this.posX = posX;
         this.posY = posY;
         this.posZ = posZ;
+        this.initialPosX = posX;
+        this.initialPosY = posY;
+        this.initialPosZ = posZ;
         this.origPosX = origPosX;
         this.origPosY = origPosY;
         this.origPosZ = origPosZ;
@@ -33,6 +37,16 @@ public class DustBox {
         this.prevPosX = this.posX;
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
+
+        double mag = 0;
+
+        long time = System.currentTimeMillis() % 1000;
+        double percent = (double) time / 1000D;
+        double a = percent + (origPosY / 24D);
+        mag = Math.max(0, Math.sin(Math.toRadians(a * 360))) / 25D;
+        this.posX = initialPosX + origPosX * mag;
+//        this.posY += origPosY * mag;
+        this.posZ = initialPosZ + origPosZ * mag;
 
         return false; //5 seocnds
     }
