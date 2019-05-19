@@ -1,5 +1,6 @@
 package club.sk1er.mods.thanos;
 
+import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -7,6 +8,7 @@ import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.IResource;
+import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
@@ -21,10 +23,13 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
 public class ThanosMod {
@@ -107,35 +112,41 @@ public class ThanosMod {
 
     public void remove(Entity entity) {
         //TODO implement
-    }
-
-    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ) {
-        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ));
-    }
-
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
-        dustBoxes.removeIf(DustBox::onUpdate);
-    }
-
-    @SubscribeEvent
-    public void onRender(RenderPlayerEvent.Post event) {
-        if ((++i) % 300 != 0)
-            return;
-        dustBoxes.clear();
-        Minecraft minecraft = Minecraft.getMinecraft();
-        EntityPlayer thePlayer = event.entityPlayer;
-        if (thePlayer == null) {
-            return;
+        if (entity instanceof EntityPlayer) {
+            dust(((EntityPlayer) entity));
         }
+    }
+
+    private void dust(EntityPlayer player) {
 
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
         IResource iresource = null;
         try {
-            iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
-            inputstream = iresource.getInputStream();
+
+
+            SkinManager skinManager = Minecraft.getMinecraft().getSkinManager();
+            Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.sessionService.getTextures(player.getGameProfile(), false);
+            MinecraftProfileTexture minecraftProfileTexture = textures.get(MinecraftProfileTexture.Type.SKIN);
+            File file2 = null;
+            if (minecraftProfileTexture != null) {
+                File file1 = new File(skinManager.skinCacheDir, minecraftProfileTexture.getHash().length() > 2 ? minecraftProfileTexture.getHash().substring(0, 2) : "xx");
+                file2 = new File(file1, minecraftProfileTexture.getHash());
+            }
+
+            boolean steeve = false;
+            if (file2 == null || !file2.exists()) { //Default to steve
+                iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
+                inputstream = iresource.getInputStream();
+                steeve = true;
+            } else {
+                inputstream = new FileInputStream(file2);
+            }
             BufferedImage bufferedimage = TextureUtil.readBufferedImage(inputstream);
+            if (bufferedimage == null) return;
+            if (bufferedimage.getWidth() != 64 || bufferedimage.getHeight() != 64)
+                return;
+            System.out.println("Parsed image: " + bufferedimage.getWidth() + " " + bufferedimage.getHeight() + " from " + player.getName() + " as " + (steeve ? "Default" : " Custom Skin"));
             for (BodyPart bodyPart : partList) {
                 for (int j = 0; j < bodyPart.width; j++) {
                     for (int k = 0; k < bodyPart.height; k++) {
@@ -147,7 +158,7 @@ public class ThanosMod {
 
                         Pos relCoords = bodyPart.getCoords(j, k);
                         relCoords.add(.22 * 1 / scale, 1.95 * 1 / scale, .22 * 1 / scale);
-                        relCoords.rotate(0, (float) Math.toRadians(-thePlayer.rotationYaw ), 0);
+                        relCoords.rotate(0, (float) Math.toRadians(-player.rotationYaw), 0);
 
                         double xCoord = relCoords.x;
                         double yCoord = relCoords.y;
@@ -157,9 +168,9 @@ public class ThanosMod {
                         //Adjust because our model system is centered around top left of head and we want to center around center of chest
                         //Negative because coords are are mult by *-1 cause MC
                         createPixel(
-                                thePlayer.posX + xCoord * scale,
-                                thePlayer.posY + yCoord * scale,
-                                thePlayer.posZ + zCoord * scale,
+                                player.posX + xCoord * scale,
+                                player.posY + yCoord * scale,
+                                player.posZ + zCoord * scale,
                                 red,
                                 green,
                                 blue,
@@ -174,6 +185,22 @@ public class ThanosMod {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ) {
+        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ));
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        dustBoxes.removeIf(DustBox::onUpdate);
+    }
+
+    @SubscribeEvent
+    public void onRender(RenderPlayerEvent.Post event) {
+        if (!dustBoxes.isEmpty())
+            return;
+//        dust(event.entityPlayer);
 
 
     }
@@ -183,9 +210,17 @@ public class ThanosMod {
         GlStateManager.pushMatrix();
         Tessellator instance = Tessellator.getInstance();
         WorldRenderer worldRenderer = instance.getWorldRenderer();
+        GlStateManager.disableCull();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableBlend();
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.blendFunc(770, 771);
         for (DustBox dustBox : dustBoxes) {
             dustBox.render(worldRenderer, event.partialTicks);
         }
+        GlStateManager.enableCull();
+        GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
     }
 
@@ -200,7 +235,7 @@ public class ThanosMod {
         LEFT_ARM,
         RIGHT_ARM,
         LEFT_FOOT,
-        RIGHT_FOOT;
+        RIGHT_FOOT
     }
 
     class BodyPart {
