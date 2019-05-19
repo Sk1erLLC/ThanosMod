@@ -146,7 +146,6 @@ public class ThanosMod {
             if (bufferedimage == null) return;
             if (bufferedimage.getWidth() != 64 || bufferedimage.getHeight() != 64)
                 return;
-            System.out.println("Parsed image: " + bufferedimage.getWidth() + " " + bufferedimage.getHeight() + " from " + player.getName() + " as " + (steeve ? "Default" : " Custom Skin"));
             for (BodyPart bodyPart : partList) {
                 for (int j = 0; j < bodyPart.width; j++) {
                     for (int k = 0; k < bodyPart.height; k++) {

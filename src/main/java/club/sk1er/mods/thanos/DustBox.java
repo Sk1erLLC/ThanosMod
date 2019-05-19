@@ -42,7 +42,7 @@ public class DustBox {
         this.origPosX = origPosX;
         this.origPosY = origPosY;
         this.origPosZ = origPosZ;
-        targetColorBrightness = (particleRed + particleBlue + particleGreen) / 3;
+        targetColorBrightness = (particleRed + particleBlue + particleGreen) / 4; //Gray and half brightness
     }
 
     public boolean onUpdate() {
@@ -62,7 +62,7 @@ public class DustBox {
         double state = 0;
 
         double percent = (age - 80) / (duration * 20);
-        double a = percent + (origPosY / 48D) + .2;
+        double a = percent + (origPosY / 48D) + origPosZ / 40D + origPosX / 40D + .2;
         state = Math.max(0, Math.cos(Math.toRadians(a * 360))) / 25D;
         if (state == 0)
             return false;
@@ -70,29 +70,30 @@ public class DustBox {
 //        this.posY += origPosY * state;
 //        this.posZ = initialPosZ + origPosZ * state;
 
-        state *= 80;
+        state *= 160;
 
-        double wiggleFactor = 20D / state;
-        this.posX += (Math.random() - .5) / wiggleFactor;
-        this.posY += (Math.random() - .5) / wiggleFactor;
-        this.posZ += (Math.random() - .5) / wiggleFactor;
-
+        if (state > 3) {
+            double wiggleFactor = 20D / state;
+            this.posX += (Math.random() - .5) / wiggleFactor;
+            this.posY += (Math.random() - .5) / wiggleFactor;
+            this.posZ += (Math.random() - .5) / wiggleFactor;
+        }
 
         int thresholdOne = 0;
-        double thresholdTwo = 2;
-        double val = (1D / (thresholdTwo - thresholdOne));
+        double thresholdTwo = 5;
         if (state > thresholdOne) {
-            if (state < thresholdTwo) {
-                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state - thresholdOne) * val));
-                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state - thresholdOne) * val));
-                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state - thresholdOne) * val));
+            if (state < thresholdTwo / 2) {
+                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state - thresholdOne) * 4));
+                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state - thresholdOne) * 4));
+                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state - thresholdOne) * 4));
             } else {
                 particleRed = targetColorBrightness;
                 particleBlue = targetColorBrightness;
                 particleGreen = targetColorBrightness;
+            }
+            if (state > thresholdTwo)
                 particleAlpha = initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo));
 
-            }
         } else {
             particleRed = initParticleRed;
             particleGreen = initParticleGreen;
@@ -100,7 +101,7 @@ public class DustBox {
             particleAlpha = initParticleAlpha;
         }
 
-        return state > 3; //Done with val
+        return state > 6; //Done with val
 //        return false;
     }
 
