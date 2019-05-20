@@ -88,12 +88,6 @@ processResources
     }
 }
 jar {
-    dependsOn configurations.compile
-    from {
-        configurations.embed.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
     manifest {
         attributes "FMLCorePlugin": "club.sk1er.mods.thanos.FMLLoadingPlugin",
                 "ModSide": "CLIENT",     

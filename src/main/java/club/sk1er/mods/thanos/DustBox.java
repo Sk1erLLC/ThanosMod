@@ -20,6 +20,7 @@ public class DustBox {
     private int age;
     private double randomValOne = Math.random();
     private double randomValTwo = Math.random();
+    private double randomValueThree = Math.random();
     private float targetColorBrightness = 0;
 
     public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ, double origPosX, double origPosY, double origPosZ) {
@@ -58,13 +59,13 @@ public class DustBox {
         //Second second, turn to gray scale
         //3d second, drop alpha to 0
 
-        float duration = 10;
+        float duration = 15;
         double state = 0;
 
         double percent = (age - 80) / (duration * 20);
-        double a = percent + (origPosY / 48D) + origPosZ / 40D + origPosX / 40D + .2;
-        state = Math.max(0, Math.cos(Math.toRadians(a * 360))) / 25D;
-        if (state == 0)
+        double a = percent + (origPosY / 48D) + origPosZ / 40D + origPosX / 40D - .2;
+        state = -Math.cos(Math.toRadians(a * 180)) / 25D;
+        if (state <= 0)
             return false;
 //        this.posX = initialPosX + origPosX * state;
 //        this.posY += origPosY * state;
@@ -73,10 +74,11 @@ public class DustBox {
         state *= 160;
 
         if (state > 3) {
-            double wiggleFactor = 20D / state;
-            this.posX += (Math.random() - .5) / wiggleFactor;
-            this.posY += (Math.random() - .5) / wiggleFactor;
-            this.posZ += (Math.random() - .5) / wiggleFactor;
+            double wiggleFactor = 50D / state;
+
+            this.posX += (Math.random() * (randomValOne - .5)) / wiggleFactor;
+            this.posY += (Math.random() * (randomValTwo - .5)) / wiggleFactor;
+            this.posZ += (Math.random() * (randomValueThree - .5)) / wiggleFactor;
         }
 
         int thresholdOne = 0;

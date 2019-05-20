@@ -199,7 +199,8 @@ public class ThanosMod {
     public void onRender(RenderPlayerEvent.Post event) {
         if (!dustBoxes.isEmpty())
             return;
-//        dust(event.entityPlayer);
+        if (Minecraft.getMinecraft().isIntegratedServerRunning())
+            dust(event.entityPlayer);
 
 
     }
