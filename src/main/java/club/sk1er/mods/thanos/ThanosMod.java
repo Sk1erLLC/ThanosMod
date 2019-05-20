@@ -1,5 +1,6 @@
 package club.sk1er.mods.thanos;
 
+import com.google.common.eventbus.Subscribe;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -16,6 +17,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -53,7 +55,6 @@ public class ThanosMod {
         partList.clear();
 
         //These next two dozen lines of code represent hours of pain
-
 
         //HEAD
         partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0, 0)); //FrontOfFace
@@ -111,20 +112,16 @@ public class ThanosMod {
     }
 
     public void remove(Entity entity) {
-        //TODO implement
         if (entity instanceof EntityPlayer) {
             dust(((EntityPlayer) entity));
         }
     }
 
     private void dust(EntityPlayer player) {
-
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
         IResource iresource = null;
         try {
-
-
             SkinManager skinManager = Minecraft.getMinecraft().getSkinManager();
             Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.sessionService.getTextures(player.getGameProfile(), false);
             MinecraftProfileTexture minecraftProfileTexture = textures.get(MinecraftProfileTexture.Type.SKIN);
@@ -134,11 +131,9 @@ public class ThanosMod {
                 file2 = new File(file1, minecraftProfileTexture.getHash());
             }
 
-            boolean steeve = false;
             if (file2 == null || !file2.exists()) { //Default to steve
                 iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
                 inputstream = iresource.getInputStream();
-                steeve = true;
             } else {
                 inputstream = new FileInputStream(file2);
             }
@@ -173,7 +168,7 @@ public class ThanosMod {
                                 red,
                                 green,
                                 blue,
-                                255,
+                                200,
                                 xCoord,
                                 yCoord,
                                 zCoord);
@@ -190,6 +185,10 @@ public class ThanosMod {
         dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ));
     }
 
+    @SubscribeEvent
+    public void switchWorld(WorldEvent.Unload event) {
+        dustBoxes.clear();
+    }
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         dustBoxes.removeIf(DustBox::onUpdate);
