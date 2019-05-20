@@ -89,7 +89,7 @@ processResources
 }
 jar {
     manifest {
-        attributes "FMLCorePlugin": "club.sk1er.mods.thanos.FMLLoadingPlugin",
+        attributes "FMLCorePlugin": "club.sk1er.mods.thanos.forge.FMLLoadingPlugin",
                 "ModSide": "CLIENT",     
                 'FMLAT': 'thanosmod_at.cfg',
 
