@@ -127,7 +127,11 @@ public class DustBox {
             particleBlue = initParticleBlue;
             particleAlpha = initParticleAlpha;
         }
-
+        if (!ThanosMod.instance.blending && state > 4) {
+            if (Math.random() > .95) { //5% chance
+                return true;
+            }
+        }
         return state > 6;
     }
 

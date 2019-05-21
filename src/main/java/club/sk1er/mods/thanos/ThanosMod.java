@@ -54,6 +54,7 @@ public class ThanosMod {
     private List<DustBox> dustBoxes = new ArrayList<>();
     private HashMap<UUID, Long> cancel = new HashMap<>();
     private File configFile = null;
+    public boolean blending = true;
 
     public ThanosMod() {
         instance = this;
@@ -236,8 +237,13 @@ public class ThanosMod {
         Tessellator instance = Tessellator.getInstance();
         WorldRenderer worldRenderer = instance.getWorldRenderer();
         GlStateManager.disableCull();
-        GlStateManager.enableAlpha();
-        GlStateManager.enableBlend();
+        if (blending) {
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+        } else {
+            GlStateManager.disableBlend();
+            GlStateManager.disableAlpha();
+        }
         GlStateManager.disableTexture2D();
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.blendFunc(770, 771);
@@ -271,6 +277,8 @@ public class ThanosMod {
                 DISTANCE = object.get("spawn").getAsInt();
             if (object.has("render"))
                 RENDER_DISTANCE = object.get("render").getAsInt();
+            if(object.has("blending"))
+                blending = object.get("blending").getAsBoolean();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -282,6 +290,7 @@ public class ThanosMod {
             jsonObject.addProperty("MODE", MODE);
             jsonObject.addProperty("spawn", DISTANCE);
             jsonObject.addProperty("render", RENDER_DISTANCE);
+            jsonObject.addProperty("blending", blending);
             FileUtils.writeStringToFile(this.configFile, jsonObject.toString());
         } catch (IOException e) {
             e.printStackTrace();

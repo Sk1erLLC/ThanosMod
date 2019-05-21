@@ -44,6 +44,16 @@ public class ThanosModGui extends GuiScreen {
         regSlider(new GuiSlider(++id, width / 2 - 100, 69, 200, 20, YELLOW + "Animation Start Distance: " + AQUA, "", 1, 64, instance.DISTANCE, false, true, slider -> {
             instance.DISTANCE = slider.getValueInt();
         }));
+        reg(new GuiButton(++id, width / 2 - 100, 69 + 22, "BLENDING"), guiButton -> {
+            StringBuilder append = new StringBuilder().append(EnumChatFormatting.YELLOW).append("Blending: ");
+            append.append(AQUA);
+            if (instance.blending) {
+                append.append("Higher Quality");
+            } else append.append("Higher Performance");
+            guiButton.displayString = append.toString();
+        }, guiButton -> {
+            instance.blending = !instance.blending;
+        });
     }
 
     @Override
