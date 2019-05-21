@@ -26,8 +26,6 @@ public final class ClassTransformer implements IClassTransformer {
     }
 
 
-
-
     private void registerTransformer(ThanosTransformer transformer) {
         for (String cls : transformer.getClassNames()) {
             this.transformerMap.put(cls, transformer);
@@ -39,9 +37,6 @@ public final class ClassTransformer implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] bytes) {
         if (bytes == null)
             return null;
-
-
-
 
 
         Collection<ThanosTransformer> transformers = this.transformerMap.get(transformedName);

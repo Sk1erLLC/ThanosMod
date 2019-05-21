@@ -22,8 +22,9 @@ public class DustBox {
     private double randomValTwo = Math.random();
     private double randomValueThree = Math.random();
     private float targetColorBrightness = 0;
+    private float seed = 0;
 
-    public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ, double origPosX, double origPosY, double origPosZ) {
+    public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ, double origPosX, double origPosY, double origPosZ, float seed) {
         this.particleRed = particleRed;
         this.particleBlue = particleBlue;
         this.particleGreen = particleGreen;
@@ -43,7 +44,8 @@ public class DustBox {
         this.origPosX = origPosX;
         this.origPosY = origPosY;
         this.origPosZ = origPosZ;
-        targetColorBrightness = (particleRed + particleBlue + particleGreen) / 4; //Gray and half brightness
+        this.seed = seed;
+        targetColorBrightness = (particleRed + particleBlue + particleGreen) / 5; //Gray and half brightness
     }
 
     public boolean onUpdate() {
@@ -52,7 +54,7 @@ public class DustBox {
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
 
-        int wait = 40;
+        int wait = 20;
         if (age < wait)
             return false;
 
@@ -66,30 +68,59 @@ public class DustBox {
             return false;
 
         state *= 160;
-        if (state > 3) {
-            double wiggleFactor = 50D / state;
-            this.posX += (Math.random() * (randomValOne - .5)) / wiggleFactor;
-            this.posY += (Math.random() * (randomValTwo - .5)) / wiggleFactor;
-            this.posZ += (Math.random() * (randomValueThree - .5)) / wiggleFactor;
+        int mode = ThanosMod.instance.MODE;
+        if (mode == 0) {
+            if (state > 3) {
+                double wiggleFactor = 50D / state;
+                this.posX += (Math.random() * (randomValOne - .5)) / wiggleFactor;
+                this.posY += (Math.random() * (randomValTwo - .5)) / wiggleFactor;
+                this.posZ += (Math.random() * (randomValueThree - .5)) / wiggleFactor;
+            }
+        } else if (mode == 1) {
+            double period = 2 * Math.pow(state, 3 / 2);
+            this.posX = initialPosX + Math.cos(period) / 3 + Math.random() / 100;
+            this.posY += .02 + Math.random() / 100;
+            this.posZ = initialPosZ + Math.sin(period) / 3 + Math.random() / 100;
+        } else if (mode == 2) {
+            double xMult = 1;
+            double zMult = 1;
+
+            if (seed > .5 && seed < .75)
+                zMult = -1;
+            if (seed < .5 && seed > .25) {
+                xMult = -1;
+            }
+            if (seed > .75) {
+                zMult = -1;
+                xMult = -1;
+            }
+
+            this.posX += (Math.random() / 200 * state * state) * (xMult);
+            this.posY += Math.random() / 200 * state * state;
+            this.posZ += Math.random() / 200 * state * state * (zMult);
         }
+
 
         int thresholdOne = 0;
         double thresholdTwo = 5;
         if (state > thresholdOne) {
-            if (state < thresholdTwo / 2) {
+            if (state < 4) {
                 //Initial = 150
                 //Target = 100
                 // 150 + (100 - 150) *
-                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state - thresholdTwo / 2F)));
-                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state - thresholdTwo / 2F)));
-                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state - thresholdTwo / 2F)));
+                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state / 4D)));
+                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state / 4D)));
+                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state / 4D)));
             } else {
                 particleRed = targetColorBrightness;
                 particleBlue = targetColorBrightness;
                 particleGreen = targetColorBrightness;
             }
-            if (state > thresholdTwo)
-                particleAlpha = initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo));
+            if (state < thresholdTwo)
+                particleAlpha = (float) Math.max(((initParticleAlpha * (1F / state))), .70);
+            else
+                particleAlpha = (float) Math.min(.7, initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo)));
+
         } else {
             particleRed = initParticleRed;
             particleGreen = initParticleGreen;
@@ -103,9 +134,11 @@ public class DustBox {
     public void render(WorldRenderer worldRendererIn, float partialTicks) {
         float f4 = 0.1F * 3;
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-        double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX))) - renderManager.renderPosX;
-        double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY))) - renderManager.renderPosY;
-        double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ))) - renderManager.renderPosZ;
+        double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks)) - renderManager.renderPosX;
+        double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks)) - renderManager.renderPosY;
+        double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks)) - renderManager.renderPosZ;
+        if (f5 * f5 + f6 * f6 + f7 * f7 > ThanosMod.instance.RENDER_DISTANCE)
+            return;
         GlStateManager.pushMatrix();
         GlStateManager.color(particleRed, particleGreen, particleBlue, particleAlpha);
         GlStateManager.translate(f5, f6, f7);
@@ -136,7 +169,6 @@ public class DustBox {
         GL11.glEnd();
         GL11.glEndList();
         GlStateManager.popMatrix();
-
-
     }
+
 }

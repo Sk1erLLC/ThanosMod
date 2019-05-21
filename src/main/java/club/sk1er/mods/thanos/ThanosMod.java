@@ -1,6 +1,7 @@
 package club.sk1er.mods.thanos;
 
-import com.google.common.eventbus.Subscribe;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
@@ -14,6 +15,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,8 +23,10 @@ import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import org.apache.commons.io.FileUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -30,17 +34,26 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
 public class ThanosMod {
     public static final String MODID = "thanosmod";
     public static final String VERSION = "1.0";
     public static ThanosMod instance;
+    public int DISTANCE = 16;
+    public int MODE = 0;
+    public int RENDER_DISTANCE = 32;
+    public boolean openGui;
     private List<BodyPart> partList = new ArrayList<>();
     private int i = 0;
     private List<DustBox> dustBoxes = new ArrayList<>();
+    private HashMap<UUID, Long> cancel = new HashMap<>();
+    private File configFile = null;
 
     public ThanosMod() {
         instance = this;
@@ -113,11 +126,17 @@ public class ThanosMod {
 
     public void remove(Entity entity) {
         if (entity instanceof EntityPlayer) {
-            dust(((EntityPlayer) entity));
+            if (entity.getDistanceSqToEntity(Minecraft.getMinecraft().thePlayer) < DISTANCE * DISTANCE)
+                dust(((EntityPlayer) entity));
         }
     }
 
     private void dust(EntityPlayer player) {
+        Long aLong = cancel.get(player.getUniqueID());
+        if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
+            return;
+        }
+        cancel.put(player.getUniqueID(), System.currentTimeMillis());
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
         IResource iresource = null;
@@ -141,6 +160,7 @@ public class ThanosMod {
             if (bufferedimage == null) return;
             if (bufferedimage.getWidth() != 64 || bufferedimage.getHeight() != 64)
                 return;
+            float seed = ThreadLocalRandom.current().nextFloat();
             for (BodyPart bodyPart : partList) {
                 for (int j = 0; j < bodyPart.width; j++) {
                     for (int k = 0; k < bodyPart.height; k++) {
@@ -168,10 +188,11 @@ public class ThanosMod {
                                 red,
                                 green,
                                 blue,
-                                200,
+                                255,
                                 xCoord,
                                 yCoord,
-                                zCoord);
+                                zCoord,
+                                seed);
                     }
                 }
             }
@@ -181,17 +202,22 @@ public class ThanosMod {
         }
     }
 
-    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ) {
-        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ));
+    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ, float seed) {
+        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ, seed));
     }
 
     @SubscribeEvent
     public void switchWorld(WorldEvent.Unload event) {
         dustBoxes.clear();
     }
+
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         dustBoxes.removeIf(DustBox::onUpdate);
+        if (openGui) {
+            openGui = false;
+            Minecraft.getMinecraft().displayGuiScreen(new ThanosModGui());
+        }
     }
 
     @SubscribeEvent
@@ -226,7 +252,42 @@ public class ThanosMod {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
+        ClientCommandHandler.instance.registerCommand(new CommandThanosMod());
     }
+
+    @EventHandler
+    public void init(FMLPreInitializationEvent event) {
+        configFile = event.getSuggestedConfigurationFile();
+        loadConfig();
+        Runtime.getRuntime().addShutdownHook(new Thread(this::saveConfig));
+    }
+
+    private void loadConfig() {
+        try {
+            JsonObject object = new JsonParser().parse(FileUtils.readFileToString(configFile)).getAsJsonObject();
+            if (object.has("MODE"))
+                MODE = object.get("MODE").getAsInt();
+            if (object.has("spawn"))
+                DISTANCE = object.get("spawn").getAsInt();
+            if (object.has("render"))
+                RENDER_DISTANCE = object.get("render").getAsInt();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveConfig() {
+        try {
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("MODE", MODE);
+            jsonObject.addProperty("spawn", DISTANCE);
+            jsonObject.addProperty("render", RENDER_DISTANCE);
+            FileUtils.writeStringToFile(this.configFile, jsonObject.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     enum BodyPartLocation {
         HEAD,
