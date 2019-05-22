@@ -135,7 +135,7 @@ public class DustBox {
             if (state < thresholdTwo)
                 particleAlpha = (float) Math.max(((initParticleAlpha * (1F / state))), .70);
             else
-                particleAlpha = (float) Math.min(.7, initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo)));
+                particleAlpha = (float) Math.min(.2, initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo)));
 
         } else {
             particleRed = initParticleRed;
