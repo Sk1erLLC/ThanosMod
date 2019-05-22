@@ -62,13 +62,15 @@ public class DustBox {
         double state = 0;
 
         double percent = (age - wait) / (duration * 20);
-        double a = percent + (origPosY / 48D) + origPosZ / 40D + origPosX / 40D - .2;
+        ThanosMod instance = ThanosMod.instance;
+        double a = percent*instance.speed + (origPosY / 48D) + origPosZ / 40D + origPosX / 40D - .2;
+
         state = -Math.cos(Math.toRadians(a * 180)) / 25D;
         if (state <= 0)
             return false;
 
         state *= 160;
-        int mode = ThanosMod.instance.MODE;
+        int mode = instance.MODE;
         if (mode == 0) {
             if (state > 3) {
                 double wiggleFactor = 50D / state;
@@ -127,7 +129,7 @@ public class DustBox {
             particleBlue = initParticleBlue;
             particleAlpha = initParticleAlpha;
         }
-        if (!ThanosMod.instance.blending && state > 4) {
+        if (!instance.blending && state > 4) {
             if (Math.random() > .95) { //5% chance
                 return true;
             }

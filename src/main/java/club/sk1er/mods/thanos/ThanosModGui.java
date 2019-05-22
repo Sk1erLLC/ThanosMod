@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 
 import static net.minecraft.util.EnumChatFormatting.AQUA;
+import static net.minecraft.util.EnumChatFormatting.RED;
 import static net.minecraft.util.EnumChatFormatting.YELLOW;
 
 public class ThanosModGui extends GuiScreen {
@@ -21,6 +22,17 @@ public class ThanosModGui extends GuiScreen {
     public void initGui() {
         super.initGui();
         ThanosMod instance = ThanosMod.instance;
+
+        reg(new GuiButton(++id, width / 2 - 100, 3, "TOGGLE"), guiButton -> {
+            StringBuilder append = new StringBuilder().append(EnumChatFormatting.YELLOW).append("Mod Status: ");
+            if (instance.enabled)
+                append.append(EnumChatFormatting.GREEN).append("Enabled");
+            else append.append(RED).append("Disabled");
+            guiButton.displayString = append.toString();
+        }, guiButton -> {
+            instance.enabled = !instance.enabled;
+        });
+
         reg(new GuiButton(++id, width / 2 - 100, 25, "MODE"), guiButton -> {
             StringBuilder append = new StringBuilder().append(EnumChatFormatting.YELLOW).append("Mode: ");
             int mode = instance.MODE;
@@ -54,6 +66,9 @@ public class ThanosModGui extends GuiScreen {
         }, guiButton -> {
             instance.blending = !instance.blending;
         });
+        regSlider(new GuiSlider(++id, width / 2 - 100, 69 + 44, 200, 20, YELLOW + "Speed: " + AQUA, "", .5D, 2D, instance.speed, true, true, slider -> {
+            instance.speed = slider.getValue();
+        }));
     }
 
     @Override

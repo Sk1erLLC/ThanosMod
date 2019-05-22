@@ -47,14 +47,16 @@ public class ThanosMod {
     public static ThanosMod instance;
     public int DISTANCE = 16;
     public int MODE = 0;
+    public boolean enabled = true;
+    public double speed = 1.0D;
     public int RENDER_DISTANCE = 32;
     public boolean openGui;
+    public boolean blending = true;
     private List<BodyPart> partList = new ArrayList<>();
     private int i = 0;
     private List<DustBox> dustBoxes = new ArrayList<>();
     private HashMap<UUID, Long> cancel = new HashMap<>();
     private File configFile = null;
-    public boolean blending = true;
 
     public ThanosMod() {
         instance = this;
@@ -133,6 +135,8 @@ public class ThanosMod {
     }
 
     private void dust(EntityPlayer player) {
+        if(!enabled)
+            return;
         Long aLong = cancel.get(player.getUniqueID());
         if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
             return;
@@ -277,8 +281,12 @@ public class ThanosMod {
                 DISTANCE = object.get("spawn").getAsInt();
             if (object.has("render"))
                 RENDER_DISTANCE = object.get("render").getAsInt();
-            if(object.has("blending"))
+            if (object.has("blending"))
                 blending = object.get("blending").getAsBoolean();
+            if (object.has("enabled"))
+                enabled = object.get("enabled").getAsBoolean();
+            if (object.has("speed"))
+                speed = object.get("speed").getAsDouble();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -291,6 +299,8 @@ public class ThanosMod {
             jsonObject.addProperty("spawn", DISTANCE);
             jsonObject.addProperty("render", RENDER_DISTANCE);
             jsonObject.addProperty("blending", blending);
+            jsonObject.addProperty("enabled", enabled);
+            jsonObject.addProperty("speed", speed);
             FileUtils.writeStringToFile(this.configFile, jsonObject.toString());
         } catch (IOException e) {
             e.printStackTrace();
