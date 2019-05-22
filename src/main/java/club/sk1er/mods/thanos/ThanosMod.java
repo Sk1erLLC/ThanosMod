@@ -254,6 +254,10 @@ public class ThanosMod {
         for (DustBox dustBox : dustBoxes) {
             dustBox.render(worldRenderer, event.partialTicks);
         }
+        if(!blending) {
+            GlStateManager.enableAlpha();
+            GlStateManager.enableBlend();
+        }
         GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
         GlStateManager.popMatrix();
