@@ -43,11 +43,13 @@ public class ThanosModGui extends GuiScreen {
                 append.append("Twirl");
             } else if (mode == 2) {
                 append.append("Scatter");
+            } else if(mode ==3) {
+                append.append("Sink");
             }
             guiButton.displayString = append.toString();
         }, guiButton -> {
             instance.MODE++;
-            if (instance.MODE > 2)
+            if (instance.MODE > 3)
                 instance.MODE = 0;
         });
         regSlider(new GuiSlider(++id, width / 2 - 100, 47, 200, 20, YELLOW + "Dust Render Distance: " + AQUA, "", 1, 64, instance.RENDER_DISTANCE, false, true, slider -> {
