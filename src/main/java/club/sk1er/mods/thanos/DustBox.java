@@ -3,7 +3,6 @@ package club.sk1er.mods.thanos;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.entity.RenderManager;
 import org.lwjgl.opengl.GL11;
 
@@ -54,16 +53,18 @@ public class DustBox {
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
 
+        //Wait one second before starting
         int wait = 20;
         if (age < wait)
             return false;
 
-        float duration = 15;
+        float duration = 15; //Period of animation in seconds
         double state = 0;
 
         double percent = (age - wait) / (duration * 20);
         ThanosMod instance = ThanosMod.instance;
         int mode = instance.MODE;
+        //Determine input state
         double a = percent * instance.speed - .2 + (origPosY / 48D);
         if (mode != 3) {
             a += origPosZ / 40D + origPosX / 40D;
@@ -74,6 +75,7 @@ public class DustBox {
             return false;
 
         state *= 160;
+        //Apply position changes based on mode
         if (mode == 0) {
             if (state > 3) {
                 double wiggleFactor = 50D / state;
@@ -119,11 +121,9 @@ public class DustBox {
 
         int thresholdOne = 0;
         double thresholdTwo = 5;
+        //Apply color changes
         if (state > thresholdOne) {
             if (state < 4) {
-                //Initial = 150
-                //Target = 100
-                // 150 + (100 - 150) *
                 particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state / 4D)));
                 particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state / 4D)));
                 particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state / 4D)));
@@ -151,8 +151,7 @@ public class DustBox {
         return state > 6;
     }
 
-    public void render(WorldRenderer worldRendererIn, float partialTicks) {
-        float f4 = 0.1F * 3;
+    public void render(float partialTicks) {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
         double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks)) - renderManager.renderPosX;
         double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks)) - renderManager.renderPosY;
