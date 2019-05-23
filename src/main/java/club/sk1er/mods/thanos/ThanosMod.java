@@ -16,6 +16,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ClientCommandHandler;
+import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
@@ -34,8 +35,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -44,8 +47,9 @@ public class ThanosMod {
     public static final String MODID = "thanosmod";
     public static final String VERSION = "1.0";
     public static ThanosMod instance;
+    public HashMap<UUID, Integer> renderBlacklist = new HashMap<>();
     public int DISTANCE = 16;
-    public int MODE = 0;
+    public int MODE = 2;
     public boolean enabled = true;
     public double speed = 1.0D;
     public int RENDER_DISTANCE = 32;
@@ -131,8 +135,8 @@ public class ThanosMod {
         }
     }
 
-    private void dust(EntityPlayer player) {
-        if(!enabled)
+    public void dust(EntityPlayer player) {
+        if (!enabled)
             return;
         Long aLong = cancel.get(player.getUniqueID());
         if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
@@ -210,15 +214,35 @@ public class ThanosMod {
     @SubscribeEvent
     public void switchWorld(WorldEvent.Unload event) {
         dustBoxes.clear();
+        renderBlacklist.clear();
     }
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
         dustBoxes.removeIf(DustBox::onUpdate);
+        Set<UUID> remove = new HashSet<>();
+        for (UUID uuid : renderBlacklist.keySet()) {
+            Integer integer = renderBlacklist.get(uuid);
+            if (integer == 1)
+                remove.add(uuid);
+            else
+                renderBlacklist.put(uuid, integer - 1);
+        }
+        for (UUID uuid : remove) {
+            renderBlacklist.remove(uuid);
+        }
         if (openGui) {
             openGui = false;
             Minecraft.getMinecraft().displayGuiScreen(new ThanosModGui());
         }
+
+    }
+
+    @SubscribeEvent
+    public void renderPlayer(RenderPlayerEvent.Pre event) {
+        Integer integer = renderBlacklist.get(event.entityPlayer.getUniqueID());
+        if (integer != null && integer > 0)
+            event.setCanceled(true);
     }
 
     @SubscribeEvent
@@ -240,7 +264,7 @@ public class ThanosMod {
         for (DustBox dustBox : dustBoxes) {
             dustBox.render(event.partialTicks);
         }
-        if(!blending) {
+        if (!blending) {
             GlStateManager.enableAlpha();
             GlStateManager.enableBlend();
         }
@@ -253,6 +277,7 @@ public class ThanosMod {
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(this);
         ClientCommandHandler.instance.registerCommand(new CommandThanosMod());
+        ClientCommandHandler.instance.registerCommand(new CommandDust());
     }
 
     @EventHandler
@@ -296,8 +321,6 @@ public class ThanosMod {
             e.printStackTrace();
         }
     }
-
-
 
 
     class BodyPart {
