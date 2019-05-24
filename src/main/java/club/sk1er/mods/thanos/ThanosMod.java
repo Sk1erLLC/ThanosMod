@@ -3,35 +3,22 @@ package club.sk1er.mods.thanos;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.renderer.texture.TextureUtil;
-import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ClientCommandHandler;
-import net.minecraftforge.client.event.RenderPlayerEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 
-import java.awt.Color;
+import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,12 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
 public class ThanosMod {
@@ -59,13 +43,14 @@ public class ThanosMod {
     public int RENDER_DISTANCE = 32;
     public boolean openGui;
     public boolean blending = true;
+    public List<DustBox> dustBoxes = new ArrayList<>();
+    public double snapTime = .01;
+    public boolean snapping = false;
+    public float seed;
     private List<BodyPart> partList = new ArrayList<>();
-    private List<DustBox> dustBoxes = new ArrayList<>();
     private HashMap<Integer, Pos> locationPos = new HashMap<>();
     private HashMap<UUID, Long> cancel = new HashMap<>();
     private File configFile = null;
-    private double snapTime = .01;
-    private boolean snapping = false;
 
     public ThanosMod() {
         instance = this;
@@ -204,7 +189,6 @@ public class ThanosMod {
                 dust(((EntityPlayer) entity));
         }
     }
-    private float seed;
 
     public boolean dust(EntityPlayer player) {
 
@@ -213,7 +197,7 @@ public class ThanosMod {
             return false;
         }
         cancel.put(player.getUniqueID(), System.currentTimeMillis());
-        ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
+        ResourceLocation defaultSkinLegacy = SkinManager.DEFAULT_SKIN;
         InputStream inputstream = null;
         IResource iresource = null;
         try {
@@ -228,7 +212,7 @@ public class ThanosMod {
                 file2 = new File(file1, minecraftProfileTexture.getHash());
                 if (file2.exists()) {
                     inputstream = new FileInputStream(file2);
-                    skin = TextureUtil.readBufferedImage(inputstream);
+                    skin = ImageIO.read(inputstream);
                     if (skin == null || skin.getWidth() != 64 || skin.getHeight() != 64) {
                         skin = null;
                     }
@@ -238,7 +222,7 @@ public class ThanosMod {
             if (skin == null) { //Default to steve
                 iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
                 inputstream = iresource.getInputStream();
-                skin = TextureUtil.readBufferedImage(inputstream);
+                skin = ImageIO.read(inputstream);
                 if (skin == null) {
                     return false;
                 }
@@ -275,7 +259,7 @@ public class ThanosMod {
 
                             double y = 0;
                             for (int i = 0; i < player.posY; i++) {
-                                if (!player.worldObj.isAirBlock(new BlockPos(player.posX, i, player.posZ)) && player.worldObj.isAirBlock(new BlockPos(player.posX, i + 1, player.posZ))) {
+                                if (!player.worldObj.isAirBlock(((int) player.posX), i, ((int) player.posZ)) && player.worldObj.isAirBlock((int) player.posX, i + 1, ((int) player.posZ))) {
                                     y = i + 1;
                                 }
                             }
@@ -312,90 +296,19 @@ public class ThanosMod {
         dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ, seed, layer));
     }
 
-    @SubscribeEvent
-    public void switchWorld(WorldEvent.Unload event) {
-        dustBoxes.clear();
-        renderBlacklist.clear();
-        seed = ThreadLocalRandom.current().nextFloat();
 
-    }
-
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
-//        generate();
-//        if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
-//            dustBoxes.clear();
-//            dust(Minecraft.getMinecraft().thePlayer);
-//        }
-
-        if (snapping)
-            snapTime += .05;
-        if (snapTime > 2.0) {
-            snapping = false;
-        }
-        dustBoxes.removeIf(DustBox::onUpdate);
-        Set<UUID> remove = new HashSet<>();
-        for (UUID uuid : renderBlacklist.keySet()) {
-            Integer integer = renderBlacklist.get(uuid);
-            if (integer == 1)
-                remove.add(uuid);
-            else
-                renderBlacklist.put(uuid, integer - 1);
-        }
-        for (UUID uuid : remove) {
-            renderBlacklist.remove(uuid);
-        }
-        if (openGui) {
-            openGui = false;
-            Minecraft.getMinecraft().displayGuiScreen(new ThanosModGui());
-        }
-
-    }
-
-    @SubscribeEvent
-    public void renderPlayer(RenderPlayerEvent.Pre event) {
-        Integer integer = renderBlacklist.get(event.entityPlayer.getUniqueID());
-        if (integer != null && integer > 0)
-            event.setCanceled(true);
-    }
-
-    @SubscribeEvent
-    public void renderWorld(RenderWorldLastEvent event) {
-        GlStateManager.pushMatrix();
-        Tessellator instance = Tessellator.getInstance();
-        WorldRenderer worldRenderer = instance.getWorldRenderer();
-        GlStateManager.disableCull();
-        if (blending) {
-            GlStateManager.enableAlpha();
-            GlStateManager.enableBlend();
-        } else {
-            GlStateManager.disableBlend();
-            GlStateManager.disableAlpha();
-        }
-        GlStateManager.disableTexture2D();
-        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.blendFunc(770, 771);
-        for (DustBox dustBox : dustBoxes) {
-            dustBox.render(event.partialTicks);
-        }
-        if (!blending) {
-            GlStateManager.enableAlpha();
-            GlStateManager.enableBlend();
-        }
-        GlStateManager.enableCull();
-        GlStateManager.enableTexture2D();
-        GlStateManager.popMatrix();
-    }
-
-    @EventHandler
+    @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        MinecraftForge.EVENT_BUS.register(this);
+        EventsClass target = new EventsClass();
+        MinecraftForge.EVENT_BUS.register(target);
+        FMLCommonHandler.instance().bus().register(target);
+
         ClientCommandHandler.instance.registerCommand(new CommandThanosMod());
         ClientCommandHandler.instance.registerCommand(new CommandDust());
         ClientCommandHandler.instance.registerCommand(new CommandSnap());
     }
 
-    @EventHandler
+    @Mod.EventHandler
     public void init(FMLPreInitializationEvent event) {
         configFile = event.getSuggestedConfigurationFile();
         loadConfig();
@@ -442,18 +355,6 @@ public class ThanosMod {
         snapTime = .01;
     }
 
-    @SubscribeEvent
-    public void renderTick(TickEvent.RenderTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
-        if (snapping) {
-            double a = .5 * snapTime;
-            int mag = (int) Math.min(255, 255 * Math.abs(Math.pow(2, -a)));
-            ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
-            Gui.drawRect(0, 0, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight(), new Color(255, 255, 255, mag).getRGB());
-        }
-    }
 
     class BodyPart {
         public final int side;

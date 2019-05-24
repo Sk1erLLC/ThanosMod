@@ -17,7 +17,7 @@ public class RenderGlobalTransformer implements ThanosTransformer {
     public void transform(ClassNode classNode, String name) {
         for (MethodNode method : classNode.methods) {
             String methodName = mapMethodName(classNode, method);
-            if (methodName.equalsIgnoreCase("onEntityRemoved") || methodName.equalsIgnoreCase("func_72709_b")) {
+            if (methodName.equalsIgnoreCase("onEntityDestroy") || methodName.equalsIgnoreCase("func_72709_b")) {
                 method.instructions.insertBefore(method.instructions.getFirst(), getCallInsn());
             }
         }

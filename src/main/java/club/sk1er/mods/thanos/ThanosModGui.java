@@ -1,9 +1,9 @@
 package club.sk1er.mods.thanos;
 
+import cpw.mods.fml.client.config.GuiSlider;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraftforge.fml.client.config.GuiSlider;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -94,7 +94,7 @@ public class ThanosModGui extends GuiScreen {
     }
 
     private void reg(GuiButton button, Consumer<GuiButton> onUpdate, Consumer<GuiButton> onClick) {
-        this.buttonList.removeIf(button1 -> button1.id == button.id);
+        this.buttonList.removeIf(button1 -> ((GuiButton) button1).id == button.id);
         this.buttonList.add(button);
         this.clicks.keySet().removeIf(button1 -> button1.id == button.id);
         if (onClick != null) {

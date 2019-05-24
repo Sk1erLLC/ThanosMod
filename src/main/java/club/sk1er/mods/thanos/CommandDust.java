@@ -6,10 +6,10 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommandDust extends CommandBase {
@@ -28,15 +28,22 @@ public class CommandDust extends CommandBase {
         return "/dust <player>";
     }
 
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+    @Override
+    public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         return getListOfStringsMatchingLastWord(args, this.getListOfPlayerUsernames());
     }
+
 
     /**
      * Returns String array containing all player usernames in the server.
      */
     protected String[] getListOfPlayerUsernames() {
-        return Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
+        List playerEntities = Minecraft.getMinecraft().theWorld.playerEntities;
+        List<EntityPlayer> players = new ArrayList<>();
+        for (Object playerEntity : playerEntities) {
+            players.add(((EntityPlayer) playerEntity));
+        }
+        return players.stream().map(entityPlayer -> entityPlayer.getGameProfile().getName()).toArray(String[]::new);
     }
 
     @Override
@@ -44,14 +51,15 @@ public class CommandDust extends CommandBase {
         if (args.length == 1) {
             WorldClient theWorld = Minecraft.getMinecraft().theWorld;
             String seed = args[0];
-            for (EntityPlayer playerEntity : theWorld.playerEntities) {
-                if (playerEntity.getName().equalsIgnoreCase(seed)) {
+            for (Object o : theWorld.playerEntities) {
+                EntityPlayer playerEntity = (EntityPlayer) o;
+                if (playerEntity.getDisplayName().equalsIgnoreCase(seed)) {
                     double time = 15 * 20 / ThanosMod.instance.speed + 40;
                     ThanosMod.instance.renderBlacklist.put(playerEntity.getUniqueID(), (int) time);
                     boolean dust = ThanosMod.instance.dust(playerEntity);
                     if (dust)
-                        sendMessage("Dusted " + playerEntity.getName(), sender);
-                    else sendMessage("Unable to dust: " + playerEntity.getName(), sender);
+                        sendMessage("Dusted " + playerEntity.getGameProfile().getName(), sender);
+                    else sendMessage("Unable to dust: " + playerEntity.getGameProfile().getName(), sender);
                     return;
                 }
             }

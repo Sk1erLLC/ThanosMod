@@ -1,11 +1,8 @@
 package club.sk1er.mods.thanos;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.Vec3i;
+import net.minecraft.util.Vec3;
 import org.lwjgl.opengl.GL11;
 
 public class DustBox {
@@ -157,25 +154,25 @@ public class DustBox {
     }
 
     public void render(float partialTicks) {
-        RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
+        RenderManager renderManager = RenderManager.instance;
         double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks)) - renderManager.renderPosX;
         double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks)) - renderManager.renderPosY;
         double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks)) - renderManager.renderPosZ;
-        BlockPos blockPos = new BlockPos(f5+renderManager.viewerPosX, f6+renderManager.viewerPosY, f7+renderManager.viewerPosZ);
-        Vec3i to = new Vec3i(renderManager.viewerPosX, renderManager.viewerPosY, renderManager.viewerPosZ);
-        double v = blockPos.distanceSq(to);
+        Vec3 from = Vec3.createVectorHelper(f5 + renderManager.viewerPosX, f6 + renderManager.viewerPosY, f7 + renderManager.viewerPosZ);
+        Vec3 to = Vec3.createVectorHelper(renderManager.viewerPosX, renderManager.viewerPosY, renderManager.viewerPosZ);
+        double v = from.squareDistanceTo(to);
         if (v > ThanosMod.instance.RENDER_DISTANCE * ThanosMod.instance.RENDER_DISTANCE) {
             return;
         }
-        GlStateManager.pushMatrix();
-        GlStateManager.color(particleRed, particleGreen, particleBlue, particleAlpha);
-        GlStateManager.translate(f5, f6, f7);
+        GL11.glPushMatrix();
+        GL11.glColor4f(particleRed, particleGreen, particleBlue, particleAlpha);
+        GL11.glTranslated(f5, f6, f7);
         double scale = 0.0311F;
         scale *= 1 + ((double) layer) / 4D;
-        GlStateManager.scale(scale, scale, scale);
+        GL11.glScaled(scale, scale, scale);
         if (GL_LIST_ID != -1) {
-            GlStateManager.callList(GL_LIST_ID);
-            GlStateManager.popMatrix();
+            GL11.glCallList(GL_LIST_ID);
+            GL11.glPopMatrix();
             return;
         }
         GL_LIST_ID = GLAllocation.generateDisplayLists(1);
@@ -197,7 +194,7 @@ public class DustBox {
         GL11.glVertex3d(1.f, 1.f, -1.f);
         GL11.glEnd();
         GL11.glEndList();
-        GlStateManager.popMatrix();
+        GL11.glPopMatrix();
     }
 
 }
