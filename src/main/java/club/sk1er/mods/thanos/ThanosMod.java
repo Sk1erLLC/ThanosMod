@@ -200,7 +200,7 @@ public class ThanosMod {
         if (!enabled)
             return;
         if (entity instanceof EntityPlayer) {
-            if (entity.getDistanceSqToEntity(Minecraft.getMinecraft().thePlayer) < DISTANCE * DISTANCE)
+            if (entity.getDistanceSqToEntity(Minecraft.getMinecraft().player) < DISTANCE * DISTANCE)
                 dust(((EntityPlayer) entity));
         }
     }
@@ -275,7 +275,7 @@ public class ThanosMod {
 
                             double y = 0;
                             for (int i = 0; i < player.posY; i++) {
-                                if (!player.worldObj.isAirBlock(new BlockPos(player.posX, i, player.posZ)) && player.worldObj.isAirBlock(new BlockPos(player.posX, i + 1, player.posZ))) {
+                                if (!player.world.isAirBlock(new BlockPos(player.posX, i, player.posZ)) && player.world.isAirBlock(new BlockPos(player.posX, i + 1, player.posZ))) {
                                     y = i + 1;
                                 }
                             }

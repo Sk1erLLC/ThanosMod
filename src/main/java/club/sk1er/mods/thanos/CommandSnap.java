@@ -16,21 +16,21 @@ import java.util.List;
 public class CommandSnap extends CommandBase {
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "snap";
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender) {
+    public String getUsage(ICommandSender sender) {
         return "/snap";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        WorldClient theWorld = Minecraft.getMinecraft().theWorld;
+        WorldClient theWorld = Minecraft.getMinecraft().world;
         List<EntityPlayer> list = new ArrayList<>(theWorld.playerEntities);
         Collections.shuffle(list);
-        list.remove(Minecraft.getMinecraft().thePlayer);
+        list.remove(Minecraft.getMinecraft().player);
         list.removeIf(Entity::isInvisible);
         for (int i = 0; i < list.size() / 2; i++) {
             EntityPlayer playerEntity = list.get(i);

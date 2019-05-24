@@ -12,12 +12,12 @@ public class CommandThanosMod extends CommandBase {
     }
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "thanosmod";
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender) {
+    public String getUsage(ICommandSender sender) {
         return "/thanosmod";
     }
 

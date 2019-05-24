@@ -21,19 +21,19 @@ public class CommandDust extends CommandBase {
     }
 
     @Override
-    public String getCommandName() {
+    public String getName() {
         return "dust";
     }
 
     @Override
-    public String getCommandUsage(ICommandSender sender) {
+    public String getUsage(ICommandSender sender) {
         return "/dust <player>";
     }
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 1) {
-            WorldClient theWorld = Minecraft.getMinecraft().theWorld;
+            WorldClient theWorld = Minecraft.getMinecraft().world;
             String seed = args[0];
             for (EntityPlayer playerEntity : theWorld.playerEntities) {
                 if (playerEntity.getName().equalsIgnoreCase(seed)) {
@@ -47,7 +47,7 @@ public class CommandDust extends CommandBase {
                 }
             }
             sendMessage("Could not find player with name " + seed, sender);
-        } else sendMessage(getCommandUsage(sender), sender);
+        } else sendMessage(getUsage(sender), sender);
     }
 
 
@@ -55,16 +55,17 @@ public class CommandDust extends CommandBase {
      * Returns String array containing all player usernames in the server.
      */
     protected String[] getListOfPlayerUsernames() {
-        return Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
+        return Minecraft.getMinecraft().world.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
     }
 
+
     @Override
-    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
+    public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos targetPos) {
         return getListOfStringsMatchingLastWord(args, this.getListOfPlayerUsernames());
     }
 
     private void sendMessage(String chat, ICommandSender sender) {
         String prefix = TextFormatting.RED + "[" + TextFormatting.AQUA + "Thanos Mod" + TextFormatting.RED + "]" + TextFormatting.YELLOW + ": ";
-        sender.addChatMessage(new TextComponentString(prefix + chat));
+        sender.sendMessage(new TextComponentString(prefix + chat));
     }
 }
