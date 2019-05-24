@@ -206,11 +206,10 @@ public class ThanosMod {
     public boolean dust(EntityPlayer player) {
         if (!enabled)
             return false;
-//        Long aLong = cancel.get(player.getUniqueID());
-//        if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
-//            System.out.println("On cooldown");
-//            return false;
-//        }
+        Long aLong = cancel.get(player.getUniqueID());
+        if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
+            return false;
+        }
         cancel.put(player.getUniqueID(), System.currentTimeMillis());
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
@@ -218,7 +217,6 @@ public class ThanosMod {
         try {
             SkinManager skinManager = Minecraft.getMinecraft().getSkinManager();
             Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.sessionService.getTextures(player.getGameProfile(), false);
-            System.out.println("TEX SIZE: " + textures.size());
             MinecraftProfileTexture minecraftProfileTexture = textures.get(MinecraftProfileTexture.Type.SKIN);
             File file2 = null;
             BufferedImage skin = null;
@@ -230,24 +228,20 @@ public class ThanosMod {
                     inputstream = new FileInputStream(file2);
                     skin = TextureUtil.readBufferedImage(inputstream);
                     if (skin == null || skin.getWidth() != 64 || skin.getHeight() != 64) {
-                        if (skin != null) {
-                            System.out.println("Invalid size: " + skin.getWidth() + " " + skin.getHeight());
-                        } else System.out.println("BUFF NULL");
                         skin = null;
                     }
-                } else System.out.println("FILE NOT EXISTS");
-            } else System.out.println("TEX NULL");
+                }
+            }
 
             if (skin == null) { //Default to steve
                 iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
                 inputstream = iresource.getInputStream();
                 skin = TextureUtil.readBufferedImage(inputstream);
                 if (skin == null) {
-                    System.out.println("Error loading skin");
                     return false;
                 }
             }
-
+            System.out.println(skin.getWidth() + " " + skin.getHeight());
             float seed = ThreadLocalRandom.current().nextFloat();
             for (int a = 0; a < 1; a++) {
                 for (BodyPart bodyPart : partList) {
@@ -259,8 +253,9 @@ public class ThanosMod {
                                 continue;
                             int rawColor = skin.getRGB(x, y1);
                             int alpha = (rawColor >> 24) & 0xFF;
-                            if (alpha == 0)
+                            if (alpha == 0) {
                                 continue;
+                            }
 
                             int red = (rawColor >> 16) & 0xFF;
                             int green = (rawColor >> 8) & 0xFF;
