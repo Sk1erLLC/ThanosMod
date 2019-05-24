@@ -7,8 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.IResource;
@@ -200,7 +198,7 @@ public class ThanosMod {
         if (!enabled)
             return;
         if (entity instanceof EntityPlayer) {
-            if (entity.getDistanceSqToEntity(Minecraft.getMinecraft().player) < DISTANCE * DISTANCE)
+            if (entity.getDistanceSq(Minecraft.getMinecraft().player) < DISTANCE * DISTANCE)
                 dust(((EntityPlayer) entity));
         }
     }
@@ -362,8 +360,6 @@ public class ThanosMod {
     @SubscribeEvent
     public void renderWorld(RenderWorldLastEvent event) {
         GlStateManager.pushMatrix();
-        Tessellator instance = Tessellator.getInstance();
-        VertexBuffer worldRenderer = instance.getBuffer();
         GlStateManager.disableCull();
         if (blending) {
             GlStateManager.enableAlpha();
