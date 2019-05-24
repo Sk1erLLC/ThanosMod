@@ -8,16 +8,16 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.RenderPlayerEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
+@Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION, acceptedMinecraftVersions = "*")
 public class ThanosMod {
     public static final String MODID = "thanosmod";
     public static final String VERSION = "1.0";
@@ -354,7 +354,7 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void renderPlayer(RenderPlayerEvent.Pre event) {
-        Integer integer = renderBlacklist.get(event.entityPlayer.getUniqueID());
+        Integer integer = renderBlacklist.get(event.getEntityLiving().getUniqueID());
         if (integer != null && integer > 0)
             event.setCanceled(true);
     }
@@ -363,7 +363,7 @@ public class ThanosMod {
     public void renderWorld(RenderWorldLastEvent event) {
         GlStateManager.pushMatrix();
         Tessellator instance = Tessellator.getInstance();
-        WorldRenderer worldRenderer = instance.getWorldRenderer();
+        VertexBuffer worldRenderer = instance.getBuffer();
         GlStateManager.disableCull();
         if (blending) {
             GlStateManager.enableAlpha();
@@ -376,7 +376,7 @@ public class ThanosMod {
         GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.blendFunc(770, 771);
         for (DustBox dustBox : dustBoxes) {
-            dustBox.render(event.partialTicks);
+            dustBox.render(event.getPartialTicks());
         }
         if (!blending) {
             GlStateManager.enableAlpha();

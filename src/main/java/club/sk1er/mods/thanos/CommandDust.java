@@ -6,15 +6,17 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 public class CommandDust extends CommandBase {
     @Override
-    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+    public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
         return true;
     }
 
@@ -28,19 +30,8 @@ public class CommandDust extends CommandBase {
         return "/dust <player>";
     }
 
-    public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
-        return getListOfStringsMatchingLastWord(args, this.getListOfPlayerUsernames());
-    }
-
-    /**
-     * Returns String array containing all player usernames in the server.
-     */
-    protected String[] getListOfPlayerUsernames() {
-        return Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
-    }
-
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (args.length == 1) {
             WorldClient theWorld = Minecraft.getMinecraft().theWorld;
             String seed = args[0];
@@ -59,8 +50,21 @@ public class CommandDust extends CommandBase {
         } else sendMessage(getCommandUsage(sender), sender);
     }
 
+
+    /**
+     * Returns String array containing all player usernames in the server.
+     */
+    protected String[] getListOfPlayerUsernames() {
+        return Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
+    }
+
+    @Override
+    public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, @Nullable BlockPos pos) {
+        return getListOfStringsMatchingLastWord(args, this.getListOfPlayerUsernames());
+    }
+
     private void sendMessage(String chat, ICommandSender sender) {
-        String prefix = EnumChatFormatting.RED + "[" + EnumChatFormatting.AQUA + "Thanos Mod" + EnumChatFormatting.RED + "]" + EnumChatFormatting.YELLOW + ": ";
-        sender.addChatMessage(new ChatComponentText(prefix + chat));
+        String prefix = TextFormatting.RED + "[" + TextFormatting.AQUA + "Thanos Mod" + TextFormatting.RED + "]" + TextFormatting.YELLOW + ": ";
+        sender.addChatMessage(new TextComponentString(prefix + chat));
     }
 }
