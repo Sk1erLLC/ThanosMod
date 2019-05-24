@@ -204,6 +204,7 @@ public class ThanosMod {
                 dust(((EntityPlayer) entity));
         }
     }
+    private float seed;
 
     public boolean dust(EntityPlayer player) {
 
@@ -242,7 +243,6 @@ public class ThanosMod {
                     return false;
                 }
             }
-            float seed = ThreadLocalRandom.current().nextFloat();
             for (int a = 0; a < 1; a++) {
                 for (BodyPart bodyPart : partList) {
                     for (int j = 0; j < bodyPart.width; j++) {
@@ -316,6 +316,8 @@ public class ThanosMod {
     public void switchWorld(WorldEvent.Unload event) {
         dustBoxes.clear();
         renderBlacklist.clear();
+        seed = ThreadLocalRandom.current().nextFloat();
+
     }
 
     @SubscribeEvent
@@ -325,6 +327,7 @@ public class ThanosMod {
 //            dustBoxes.clear();
 //            dust(Minecraft.getMinecraft().thePlayer);
 //        }
+
         if (snapping)
             snapTime += .05;
         if (snapTime > 2.0) {
