@@ -197,6 +197,8 @@ public class ThanosMod {
     }
 
     public void remove(Entity entity) {
+        if (!enabled)
+            return;
         if (entity instanceof EntityPlayer) {
             if (entity.getDistanceSqToEntity(Minecraft.getMinecraft().thePlayer) < DISTANCE * DISTANCE)
                 dust(((EntityPlayer) entity));
@@ -204,8 +206,7 @@ public class ThanosMod {
     }
 
     public boolean dust(EntityPlayer player) {
-        if (!enabled)
-            return false;
+
         Long aLong = cancel.get(player.getUniqueID());
         if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
             return false;

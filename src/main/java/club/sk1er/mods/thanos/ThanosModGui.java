@@ -44,7 +44,7 @@ public class ThanosModGui extends GuiScreen {
             } else if (mode == 2) {
                 append.append("Scatter");
             } else if(mode ==3) {
-                append.append("Sink");
+                append.append("Explode");
             }
             guiButton.displayString = append.toString();
         }, guiButton -> {
