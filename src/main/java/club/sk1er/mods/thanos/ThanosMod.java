@@ -241,7 +241,6 @@ public class ThanosMod {
                     return false;
                 }
             }
-            System.out.println(skin.getWidth() + " " + skin.getHeight());
             float seed = ThreadLocalRandom.current().nextFloat();
             for (int a = 0; a < 1; a++) {
                 for (BodyPart bodyPart : partList) {

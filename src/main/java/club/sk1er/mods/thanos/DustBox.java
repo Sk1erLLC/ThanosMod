@@ -4,6 +4,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.Vec3i;
 import org.lwjgl.opengl.GL11;
 
 public class DustBox {
@@ -159,8 +161,12 @@ public class DustBox {
         double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks)) - renderManager.renderPosX;
         double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks)) - renderManager.renderPosY;
         double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks)) - renderManager.renderPosZ;
-        if (f5 * f5 + f6 * f6 + f7 * f7 > ThanosMod.instance.RENDER_DISTANCE)
+        BlockPos blockPos = new BlockPos(f5+renderManager.viewerPosX, f6+renderManager.viewerPosY, f7+renderManager.viewerPosZ);
+        Vec3i to = new Vec3i(renderManager.viewerPosX, renderManager.viewerPosY, renderManager.viewerPosZ);
+        double v = blockPos.distanceSq(to);
+        if (v > ThanosMod.instance.RENDER_DISTANCE * ThanosMod.instance.RENDER_DISTANCE) {
             return;
+        }
         GlStateManager.pushMatrix();
         GlStateManager.color(particleRed, particleGreen, particleBlue, particleAlpha);
         GlStateManager.translate(f5, f6, f7);

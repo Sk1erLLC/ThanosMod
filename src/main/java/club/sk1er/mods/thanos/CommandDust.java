@@ -46,7 +46,7 @@ public class CommandDust extends CommandBase {
             String seed = args[0];
             for (EntityPlayer playerEntity : theWorld.playerEntities) {
                 if (playerEntity.getName().equalsIgnoreCase(seed)) {
-                    double time = 15 * 20 / ThanosMod.instance.speed;
+                    double time = 15 * 20 / ThanosMod.instance.speed + 40;
                     ThanosMod.instance.renderBlacklist.put(playerEntity.getUniqueID(), (int) time);
                     boolean dust = ThanosMod.instance.dust(playerEntity);
                     if (dust)
