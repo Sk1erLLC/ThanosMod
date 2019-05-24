@@ -30,7 +30,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
-import org.lwjgl.input.Keyboard;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -248,25 +247,17 @@ public class ThanosMod {
                     return false;
                 }
             }
-            iresource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation("textures/models/armor/diamond_layer_1.png"));
-            inputstream = iresource.getInputStream();
-            BufferedImage armour = TextureUtil.readBufferedImage(inputstream);
 
             float seed = ThreadLocalRandom.current().nextFloat();
             for (int a = 0; a < 1; a++) {
                 for (BodyPart bodyPart : partList) {
                     for (int j = 0; j < bodyPart.width; j++) {
                         for (int k = 0; k < bodyPart.height; k++) {
-                            BufferedImage image = skin;
-                            if (a > 0) {
-                                image = armour;
-                                System.out.println("Swapping to armour: " + armour.getWidth() + " " + armour.getHeight());
-                            }
                             int x = bodyPart.texX + j;
                             int y1 = bodyPart.texY + k;
-                            if (y1 >= image.getHeight())
+                            if (y1 >= skin.getHeight())
                                 continue;
-                            int rawColor = image.getRGB(x, y1);
+                            int rawColor = skin.getRGB(x, y1);
                             int alpha = (rawColor >> 24) & 0xFF;
                             if (alpha == 0)
                                 continue;
@@ -277,47 +268,8 @@ public class ThanosMod {
                             double scale = 0.0625F;
 
                             Pos relCoords = bodyPart.getCoords(j, k);
-                            int tmpLayer = a > 0 ? a + 1 : 0;
+                            int tmpLayer = 0;
 
-                            if (bodyPart.part == 0) {
-                                int offset = bodyPart.side % 2 == 0 ? tmpLayer : -tmpLayer;
-                                double xMult = 1;
-                                double yMult = 1;
-                                double zMult = 1;
-
-                                double xOff = 0;
-                                double yOff = 0;
-                                double zOff = 0;
-                                if (floorEven(bodyPart.side) == 0) {
-                                    zOff = offset;
-                                    xMult += (double) tmpLayer / 4D;
-                                    yMult += (double) tmpLayer / 4D;
-                                } else if (floorEven(bodyPart.side) == 2) {
-                                    yOff = offset;
-                                    xMult += (double) tmpLayer / 4D;
-                                    zMult += (double) tmpLayer / 4D;
-                                } else if (floorEven(bodyPart.side) == 4) {
-                                    xOff = offset;
-                                    yMult += (double) tmpLayer / 4D;
-                                    zMult += (double) tmpLayer / 4D;
-                                }
-
-
-                                relCoords.add(xOff, yOff, zOff);
-
-                                int part = bodyPart.part;
-                                Pos pos = locationPos.get(floorEven(part));
-                                if (part % 2 != 0)
-                                    pos.invert();
-                                if (pos == null) {
-                                    System.out.println("BAD THINGS ON " + part);
-                                    continue;
-                                }
-
-                                relCoords.add(-pos.x, -pos.y, -pos.z);
-                                relCoords.multiply(xMult, yMult, zMult);
-                                relCoords.add(pos.x, pos.y, pos.z);
-                            }
                             //Adjust because our model system is centered around top left of head and we want to center around center of chest
                             relCoords.add(.22 * 1 / scale, 1.95 * 1 / scale, .22 * 1 / scale);
                             relCoords.rotate(0, (float) Math.toRadians(-player.rotationYaw), 0);
@@ -373,11 +325,11 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
-        generate();
-        if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
-            dustBoxes.clear();
-            dust(Minecraft.getMinecraft().thePlayer);
-        }
+//        generate();
+//        if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
+//            dustBoxes.clear();
+//            dust(Minecraft.getMinecraft().thePlayer);
+//        }
         if (snapping)
             snapTime += .05;
         if (snapTime > 2.0) {

@@ -72,85 +72,86 @@ public class DustBox {
             a += origPosZ / 40D + origPosX / 40D;
         }
 
-//        state = -Math.cos(Math.toRadians(a * 180)) / 25D;
-//        if (state <= 0)
-//            return false;
-//
-//        state *= 160;
-//        //Apply position changes based on mode
-//        if (mode == 0) {
-//            if (state > 3) {
-//                double wiggleFactor = 50D / state;
-//                this.posX += (Math.random() * (randomValOne - .5)) / wiggleFactor;
-//                this.posY += (Math.random() * (randomValTwo - .5)) / wiggleFactor;
-//                this.posZ += (Math.random() * (randomValueThree - .5)) / wiggleFactor;
-//            }
-//        } else if (mode == 1) {
-//            double period = 2 * Math.pow(state, 3 / 2);
-//            this.posX = initialPosX + Math.cos(period) / 3 + Math.random() / 100;
-//            this.posY += .02 + Math.random() / 100;
-//            this.posZ = initialPosZ + Math.sin(period) / 3 + Math.random() / 100;
-//        } else if (mode == 2) {
-//            double xMult = 1;
-//            double zMult = 1;
-//
-//            if (seed > .5 && seed < .75)
-//                zMult = -1;
-//            if (seed < .5 && seed > .25) {
-//                xMult = -1;
-//            }
-//            if (seed > .75) {
-//                zMult = -1;
-//                xMult = -1;
-//            }
-//
-//            this.posX += (Math.random() / 200 * state * state) * (xMult);
-//            this.posY += Math.random() / 200 * state * state;
-//            this.posZ += Math.random() / 200 * state * state * (zMult);
-//        } else if (mode == 3) {
-//            double mag = 0;
-//            if (state < 1) {
-//                mag = -state;
-//            } else {
-//                mag = (Math.pow(state - 1, 2)) / 2 - 1;
-//            }
-//            double scale = 0.0311F;
-//
-//            this.posX = initialPosX + origPosX * mag * scale;
-//            this.posZ = initialPosZ + origPosZ * mag * scale;
-//        }
-//
-//
-//        int thresholdOne = 0;
-//        double thresholdTwo = 5;
-//        //Apply color changes
-//        if (state > thresholdOne) {
-//            if (state < 4) {
-//                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state / 4D)));
-//                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state / 4D)));
-//                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state / 4D)));
-//            } else {
-//                particleRed = targetColorBrightness;
-//                particleBlue = targetColorBrightness;
-//                particleGreen = targetColorBrightness;
-//            }
-//            if (state < thresholdTwo)
-//                particleAlpha = (float) Math.max(((initParticleAlpha * (1F / state))), .70);
-//            else
-//                particleAlpha = (float) Math.min(.2, initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo)));
-//
-//        } else {
-//            particleRed = initParticleRed;
-//            particleGreen = initParticleGreen;
-//            particleBlue = initParticleBlue;
-//            particleAlpha = initParticleAlpha;
-//        }
-//        if (!instance.blending && state > 4) {
-//            if (Math.random() > .95) { //5% chance
-//                return true;
-//            }
-//        }
-        return false;
+        state = -Math.cos(Math.toRadians(a * 180)) / 25D;
+        if (state <= 0)
+            return false;
+
+        state *= 160;
+        //Apply position changes based on mode
+        if (mode == 0) {
+            if (state > 3) {
+                double wiggleFactor = 50D / state;
+                this.posX += (Math.random() * (randomValOne - .5)) / wiggleFactor;
+                this.posY += (Math.random() * (randomValTwo - .5)) / wiggleFactor;
+                this.posZ += (Math.random() * (randomValueThree - .5)) / wiggleFactor;
+            }
+        } else if (mode == 1) {
+            double period = 2 * Math.pow(state, 3 / 2);
+            this.posX = initialPosX + Math.cos(period) / 3 + Math.random() / 100;
+            this.posY += .02 + Math.random() / 100;
+            this.posZ = initialPosZ + Math.sin(period) / 3 + Math.random() / 100;
+        } else if (mode == 2) {
+            double xMult = 1;
+            double zMult = 1;
+
+            if (seed > .5 && seed < .75)
+                zMult = -1;
+            if (seed < .5 && seed > .25) {
+                xMult = -1;
+            }
+            if (seed > .75) {
+                zMult = -1;
+                xMult = -1;
+            }
+
+            this.posX += (Math.random() / 200 * state * state) * (xMult);
+            this.posY += Math.random() / 200 * state * state;
+            this.posZ += Math.random() / 200 * state * state * (zMult);
+        } else if (mode == 3) {
+            double mag = 0;
+            if (state < 1) {
+                mag = -state;
+            } else {
+                mag = (Math.pow(state - 1, 2)) / 2 - 1;
+            }
+            double scale = 0.0311F;
+
+            this.posX = initialPosX + origPosX * mag * scale;
+            this.posZ = initialPosZ + origPosZ * mag * scale;
+        }
+
+
+        int thresholdOne = 0;
+        double thresholdTwo = 5;
+        //Apply color changes
+        if (state > thresholdOne) {
+            if (state < 4) {
+                particleRed = (float) (initParticleRed + ((targetColorBrightness - initParticleRed) * (state / 4D)));
+                particleGreen = (float) (initParticleGreen + ((targetColorBrightness - initParticleGreen) * (state / 4D)));
+                particleBlue = (float) (initParticleBlue + ((targetColorBrightness - initParticleBlue) * (state / 4D)));
+            } else {
+                particleRed = targetColorBrightness;
+                particleBlue = targetColorBrightness;
+                particleGreen = targetColorBrightness;
+            }
+            if (state < thresholdTwo)
+                particleAlpha = (float) Math.max(((initParticleAlpha * (1F / state))), .70);
+            else
+                particleAlpha = (float) Math.min(.2, initParticleAlpha + (float) (0 - initParticleAlpha * (state - thresholdTwo)));
+
+        } else {
+            particleRed = initParticleRed;
+            particleGreen = initParticleGreen;
+            particleBlue = initParticleBlue;
+            particleAlpha = initParticleAlpha;
+        }
+        if (!instance.blending && state > 4) {
+            if (Math.random() > .95) { //5% chance
+                return true;
+            }
+        }
+        return state > 6;
+
     }
 
     public void render(float partialTicks) {
