@@ -46,10 +46,12 @@ public class CommandDust extends CommandBase {
             String seed = args[0];
             for (EntityPlayer playerEntity : theWorld.playerEntities) {
                 if (playerEntity.getName().equalsIgnoreCase(seed)) {
-                    double time = 15 * ThanosMod.instance.speed * 20;
+                    double time = 15 * 20 / ThanosMod.instance.speed;
                     ThanosMod.instance.renderBlacklist.put(playerEntity.getUniqueID(), (int) time);
-                    ThanosMod.instance.dust(playerEntity);
-                    sendMessage("Dusted " + playerEntity.getName(), sender);
+                    boolean dust = ThanosMod.instance.dust(playerEntity);
+                    if (dust)
+                        sendMessage("Dusted " + playerEntity.getName(), sender);
+                    else sendMessage("Unable to dust: " + playerEntity.getName(), sender);
                     return;
                 }
             }

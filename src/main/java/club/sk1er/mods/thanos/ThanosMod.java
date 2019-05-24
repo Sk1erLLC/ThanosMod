@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.WorldRenderer;
@@ -13,6 +15,7 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.SkinManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.BlockPos;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.ClientCommandHandler;
@@ -27,7 +30,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
+import org.lwjgl.input.Keyboard;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,8 +62,11 @@ public class ThanosMod {
     public boolean blending = true;
     private List<BodyPart> partList = new ArrayList<>();
     private List<DustBox> dustBoxes = new ArrayList<>();
+    private HashMap<Integer, Pos> locationPos = new HashMap<>();
     private HashMap<UUID, Long> cancel = new HashMap<>();
     private File configFile = null;
+    private double snapTime = .01;
+    private boolean snapping = false;
 
     public ThanosMod() {
         instance = this;
@@ -72,58 +80,119 @@ public class ThanosMod {
     private void generate() {
         partList.clear();
 
-        //These next two dozen lines of code represent hours of pain
+        locationPos.put(0, new Pos(-3.5, -3.5, -3.5));
+        locationPos.put(2, new Pos(3.5, 14, 4.5));
+        locationPos.put(4, new Pos(7.5, 14, 4.5));
+        locationPos.put(6, new Pos(5.5, 26, 4.5));
+
+
+        //These next lines of code represent hours of pain
+
+        //BASE LAYER
 
         //HEAD
-        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0)); //FrontOfFace
-        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8)); //BackOfHead
-        partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7)); //Top of head
-        partList.add(new BodyPart(16, 1, 8, 6, 0, 7, 1, 8, 7, 7)); //Neck
-        partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7)); //Left
-        partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0)); //Right
+        partList.add(new BodyPart(8, 8, 8, 8, 0, 0, 0, 8, 8, 0, 0, 0)); //FrontOfFace
+        partList.add(new BodyPart(24, 8, 8, 8, 0, 0, 7, 8, 8, 8, 1, 0)); //BackOfHead
+        partList.add(new BodyPart(8, 0, 8, 6, 0, 0, 1, 8, 0, 7, 2, 0)); //Top of head
+        partList.add(new BodyPart(16, 1, 8, 6, 0, 7, 1, 8, 7, 7, 3, 0)); //Neck
+        partList.add(new BodyPart(16, 9, 6, 6, 0, 1, 1, 0, 7, 7, 4, 0)); //Left
+        partList.add(new BodyPart(2, 9, 6, 6, 7, 1, 6, 7, 7, 0, 5, 0)); //Right
 
 
         //TORSO
-        partList.add(new BodyPart(20, 20, 8, 12, 7, 8, 2, -1, 20, 2)); //Front
-        partList.add(new BodyPart(32, 20, 8, 12, 0, 8, 5, 8, 20, 5)); //Back
-        partList.add(new BodyPart(29, 21, 2, 10, 0, 9, 3, 0, 19, 5)); //Left
-        partList.add(new BodyPart(17, 21, 2, 10, 7, 9, 4, 7, 19, 2)); //Right
-        partList.add(new BodyPart(20, 16, 8, 2, 0, 8, 3, 8, 8, 5)); //Top
-        partList.add(new BodyPart(28, 16, 8, 2, 0, 19, 3, 8, 19, 5)); //Bottom
+        partList.add(new BodyPart(20, 20, 8, 12, 7, 8, 2, -1, 20, 2, 0, 2)); //Front
+        partList.add(new BodyPart(32, 20, 8, 12, 0, 8, 5, 8, 20, 5, 1, 2)); //Back
+        partList.add(new BodyPart(29, 21, 2, 10, 0, 9, 3, 0, 19, 5, 4, 2)); //Left
+        partList.add(new BodyPart(17, 21, 2, 10, 7, 9, 4, 7, 19, 2, 5, 2)); //Right
+        partList.add(new BodyPart(20, 16, 8, 2, 0, 8, 3, 8, 8, 5, 2, 2)); //Top
+        partList.add(new BodyPart(28, 16, 8, 2, 0, 19, 3, 8, 19, 5, 3, 2)); //Bottom
 
 
         //RIGHT LEG
-        partList.add(new BodyPart(4, 20, 4, 12, 7, 20, 2, 3, 32, 2)); //Front
-        partList.add(new BodyPart(12, 20, 4, 12, 7, 20, 5, 3, 32, 5)); //Back
-        partList.add(new BodyPart(8, 20, 2, 12, 4, 20, 3, 4, 32, 5)); //Left
-        partList.add(new BodyPart(0, 20, 2, 12, 7, 20, 3, 7, 32, 5)); //Right
-        partList.add(new BodyPart(8, 16, 2, 2, 5, 31, 3, 7, 31, 5)); //Bottom
+        partList.add(new BodyPart(4, 20, 4, 12, 7, 20, 2, 3, 32, 2, 0, 5)); //Front
+        partList.add(new BodyPart(12, 20, 4, 12, 7, 20, 5, 3, 32, 5, 1, 5)); //Back
+        partList.add(new BodyPart(8, 20, 2, 12, 4, 20, 3, 4, 32, 5, 4, 5)); //Left
+        partList.add(new BodyPart(0, 20, 2, 12, 7, 20, 3, 7, 32, 5, 5, 5)); //Right
+        partList.add(new BodyPart(8, 16, 2, 2, 5, 31, 3, 7, 31, 5, 3, 5)); //Bottom
 
 
         //LEFT LEG
-        partList.add(new BodyPart(20, 52, 4, 12, 3, 20, 2, -1, 32, 2)); //Front
-        partList.add(new BodyPart(28, 52, 4, 12, 3, 20, 5, -1, 32, 5)); //Back
-        partList.add(new BodyPart(30, 52, 2, 12, 0, 20, 3, 0, 32, 5)); //Left
-        partList.add(new BodyPart(22, 52, 2, 12, 3, 20, 3, 3, 32, 5)); //Right
-        partList.add(new BodyPart(24, 50, 2, 2, 1, 31, 3, 3, 31, 5)); //Bottom
+        partList.add(new BodyPart(20, 52, 4, 12, 3, 20, 2, -1, 32, 2, 0, 6)); //Front
+        partList.add(new BodyPart(28, 52, 4, 12, 3, 20, 5, -1, 32, 5, 1, 6)); //Back
+        partList.add(new BodyPart(30, 52, 2, 12, 0, 20, 3, 0, 32, 5, 4, 6)); //Left
+        partList.add(new BodyPart(22, 52, 2, 12, 3, 20, 3, 3, 32, 5, 5, 6)); //Right
+        partList.add(new BodyPart(24, 50, 2, 2, 1, 31, 3, 3, 31, 5, 3, 6)); //Bottom
 
 
         //RIGHT ARM
-        partList.add(new BodyPart(36 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 2, 3 + 4, 32 - 12, 2)); //Front
-        partList.add(new BodyPart(44 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 5, 3 + 4, 32 - 12, 5)); //Back
-        partList.add(new BodyPart(46 + 8, 52 - 12 - 16 - 4, 2, 12, 4 + 4, 8, 3, 4 + 4, 32 - 12, 5)); //Left
-        partList.add(new BodyPart(38 + 8, 52 - 12 - 16 - 4, 2, 12, 7 + 4, 8, 3, 7 + 4, 32 - 12, 5)); //Right
-        partList.add(new BodyPart(40 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 19, 3, 7 + 4, 31 - 12, 5)); //Bottom
-        partList.add(new BodyPart(36 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 8, 3, 7 + 4, 8, 5)); //Top
+        partList.add(new BodyPart(36 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 2, 3 + 4, 32 - 12, 2, 0, 3)); //Front
+        partList.add(new BodyPart(44 + 8, 52 - 12 - 16 - 4, 4, 12, 7 + 4, 8, 5, 3 + 4, 32 - 12, 5, 1, 3)); //Back
+        partList.add(new BodyPart(46 + 8, 52 - 12 - 16 - 4, 2, 12, 4 + 4, 8, 3, 4 + 4, 32 - 12, 5, 4, 3)); //Left
+        partList.add(new BodyPart(38 + 8, 52 - 12 - 16 - 4, 2, 12, 7 + 4, 8, 3, 7 + 4, 32 - 12, 5, 5, 3)); //Right
+        partList.add(new BodyPart(40 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 19, 3, 7 + 4, 31 - 12, 5, 3, 3)); //Bottom
+        partList.add(new BodyPart(36 + 8, 50 - 12 - 16 - 4, 2, 2, 5 + 4, 8, 3, 7 + 4, 8, 5, 2, 3)); //Top
 
 
         //LEFT ARM
-        partList.add(new BodyPart(36, 52, 4, 12, 7 - 8, 8, 2, 3 - 8, 32 - 12, 2)); //Front
-        partList.add(new BodyPart(44, 52, 4, 12, 7 - 8, 8, 5, 3 - 8, 32 - 12, 5)); //Back
-        partList.add(new BodyPart(46, 52, 2, 12, 4 - 8, 8, 3, 4 - 8, 32 - 12, 5)); //Left
-        partList.add(new BodyPart(38, 52, 2, 12, 7 - 8, 8, 3, 7 - 8, 32 - 12, 5)); //Right
-        partList.add(new BodyPart(40, 50, 2, 2, 5 - 8, 19, 3, 7 - 8, 31 - 12, 5)); //Bottom
-        partList.add(new BodyPart(36, 50, 2, 2, 5 - 8, 8, 3, 7 - 8, 8, 5)); //Top
+        partList.add(new BodyPart(36, 52, 4, 12, 7 - 8, 8, 2, 3 - 8, 32 - 12, 2, 0, 4)); //Front
+        partList.add(new BodyPart(44, 52, 4, 12, 7 - 8, 8, 5, 3 - 8, 32 - 12, 5, 1, 4)); //Back
+        partList.add(new BodyPart(46, 52, 2, 12, 4 - 8, 8, 3, 4 - 8, 32 - 12, 5, 4, 4)); //Left
+        partList.add(new BodyPart(38, 52, 2, 12, 7 - 8, 8, 3, 7 - 8, 32 - 12, 5, 5, 4)); //Right
+        partList.add(new BodyPart(40, 50, 2, 2, 5 - 8, 19, 3, 7 - 8, 31 - 12, 5, 3, 4)); //Bottom
+        partList.add(new BodyPart(36, 50, 2, 2, 5 - 8, 8, 3, 7 - 8, 8, 5, 2, 4)); //Top
+
+
+        //OUTER LAYER
+
+        //HEAD OUTER
+        partList.add(new BodyPart(8 + 32, 8, 8, 8, 0, 0, -1, 8, 8, -1, 0, 0)); //FrontOfFace
+        partList.add(new BodyPart(24 + 32, 8, 8, 8, 0, 0, 9, 8, 8, 9, 1, 0)); //BackOfHead
+        partList.add(new BodyPart(8 + 32, 0, 8, 6, 0, -1, 1, 8, -1, 7, 2, 0)); //Top of head
+        partList.add(new BodyPart(16 + 32, 1, 8, 6, 0, 8, 1, 8, 7, 7, 3, 0)); //Neck
+        partList.add(new BodyPart(16 + 32, 9, 6, 6, -1, 1, 1, -1, 7, 7, 4, 0)); //Left
+        partList.add(new BodyPart(2 + 32, 9, 6, 6, 8, 1, 6, 8, 7, 0, 5, 0)); //Right
+
+        //TORSO OUTER
+        partList.add(new BodyPart(20, 20 + 16, 8, 12, 7, 8, 1, -1, 20, 1, 0, 2)); //Front
+        partList.add(new BodyPart(32, 20 + 16, 8, 12, 0, 8, 5 + 1, 8, 20, 5 + 1, 1, 2)); //Back
+        partList.add(new BodyPart(29, 21 + 16, 2, 10, -1, 9, 3, -1, 19, 5, 4, 2)); //Left
+        partList.add(new BodyPart(17, 21 + 16, 2, 10, 8, 9, 4, 8, 19, 2, 5, 2)); //Right
+        partList.add(new BodyPart(20, 16 + 16, 8, 2, 0, 7, 3, 8, 7, 5, 2, 2)); //Top
+        partList.add(new BodyPart(28, 16 + 16, 8, 2, 0, 20, 3, 8, 20, 5, 3, 2)); //Bottom
+
+
+        //RIGHT LEG OUTER
+        partList.add(new BodyPart(4, 20 + 16, 4, 12, 7, 20, 1, 3, 32, 1, 0, 5)); //Front
+        partList.add(new BodyPart(12, 20 + 16, 4, 12, 7, 20, 6, 3, 32, 6, 1, 5)); //Back
+        partList.add(new BodyPart(8, 20 + 16, 2, 12, 3, 20, 3, 3, 32, 5, 4, 5)); //Left
+        partList.add(new BodyPart(0, 20 + 16, 2, 12, 8, 20, 3, 8, 32, 5, 5, 5)); //Right
+        partList.add(new BodyPart(8, 16 + 16, 2, 2, 5, 32, 3, 7, 32, 5, 3, 5)); //Bottom
+
+
+        //LEFT LEG OUTER
+        partList.add(new BodyPart(20 - 16, 52, 4, 12, 3, 20, 1, -1, 32, 1, 0, 6)); //Front
+        partList.add(new BodyPart(28 - 16, 52, 4, 12, 3, 20, 6, -1, 32, 6, 1, 6)); //Back
+        partList.add(new BodyPart(30 - 16, 52, 2, 12, -1, 20, 3, -1, 32, 5, 4, 6)); //Left
+        partList.add(new BodyPart(22 - 16, 52, 2, 12, 4, 20, 3, 4, 32, 5, 5, 6)); //Right
+        partList.add(new BodyPart(24 - 16, 50, 2, 2, 1, 32, 3, 3, 32, 5, 3, 6)); //Bottom
+
+
+        //RIGHT ARM OUTER
+        partList.add(new BodyPart(36 + 8, 52 - 12 - 16 - 4 + 16, 4, 12, 7 + 4, 8, 1, 3 + 4, 32 - 12, 1, 0, 3)); //Front
+        partList.add(new BodyPart(44 + 8, 52 - 12 - 16 - 4 + 16, 4, 12, 7 + 4, 8, 6, 3 + 4, 32 - 12, 6, 1, 3)); //Back
+        partList.add(new BodyPart(46 + 8, 52 - 12 - 16 - 4 + 16, 2, 12, 4 + 4 - 1, 8, 3, 4 + 4 - 1, 32 - 12, 5, 4, 3)); //Left
+        partList.add(new BodyPart(38 + 8, 52 - 12 - 16 - 4 + 16, 2, 12, 7 + 4 + 1, 8, 3, 7 + 4 + 1, 32 - 12, 5, 5, 3)); //Right
+        partList.add(new BodyPart(40 + 8, 50 - 12 - 16 - 4 + 16, 2, 2, 5 + 4, 20, 3, 7 + 4, 31 - 12 + 1, 5, 3, 3)); //Bottom
+        partList.add(new BodyPart(36 + 8, 50 - 12 - 16 - 4 + 16, 2, 2, 5 + 4, 7, 3, 7 + 4, 7, 5, 2, 3)); //Top
+
+
+        //LEFT ARM
+        partList.add(new BodyPart(36 + 16, 52, 4, 12, 7 - 8, 8, 1, 3 - 8, 32 - 12, 1, 0, 4)); //Front
+        partList.add(new BodyPart(44 + 16, 52, 4, 12, 7 - 8, 8, 6, 3 - 8, 32 - 12, 6, 1, 4)); //Back
+        partList.add(new BodyPart(46 + 16, 52, 2, 12, 4 - 8 - 1, 8, 3, 4 - 8 - 1, 32 - 12, 5, 4, 4)); //Left
+        partList.add(new BodyPart(38 + 16, 52, 2, 12, 7 - 8 + 1, 8, 3, 7 - 8 + 1, 32 - 12, 5, 5, 4)); //Right
+        partList.add(new BodyPart(40 + 16, 50, 2, 2, 5 - 8, 20, 3, 7 - 8, 31 - 12 + 1, 5, 3, 4)); //Bottom
+        partList.add(new BodyPart(36 + 16, 50, 2, 2, 5 - 8, 8 - 1, 3, 7 - 8, 8 - 1, 5, 2, 4)); //Top
 
 
     }
@@ -135,13 +204,14 @@ public class ThanosMod {
         }
     }
 
-    public void dust(EntityPlayer player) {
+    public boolean dust(EntityPlayer player) {
         if (!enabled)
-            return;
-        Long aLong = cancel.get(player.getUniqueID());
-        if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
-            return;
-        }
+            return false;
+//        Long aLong = cancel.get(player.getUniqueID());
+//        if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
+//            System.out.println("On cooldown");
+//            return false;
+//        }
         cancel.put(player.getUniqueID(), System.currentTimeMillis());
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
         InputStream inputstream = null;
@@ -149,66 +219,150 @@ public class ThanosMod {
         try {
             SkinManager skinManager = Minecraft.getMinecraft().getSkinManager();
             Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.sessionService.getTextures(player.getGameProfile(), false);
+            System.out.println("TEX SIZE: " + textures.size());
             MinecraftProfileTexture minecraftProfileTexture = textures.get(MinecraftProfileTexture.Type.SKIN);
             File file2 = null;
+            BufferedImage skin = null;
+
             if (minecraftProfileTexture != null) {
                 File file1 = new File(skinManager.skinCacheDir, minecraftProfileTexture.getHash().length() > 2 ? minecraftProfileTexture.getHash().substring(0, 2) : "xx");
                 file2 = new File(file1, minecraftProfileTexture.getHash());
-            }
+                if (file2.exists()) {
+                    inputstream = new FileInputStream(file2);
+                    skin = TextureUtil.readBufferedImage(inputstream);
+                    if (skin == null || skin.getWidth() != 64 || skin.getHeight() != 64) {
+                        if (skin != null) {
+                            System.out.println("Invalid size: " + skin.getWidth() + " " + skin.getHeight());
+                        } else System.out.println("BUFF NULL");
+                        skin = null;
+                    }
+                } else System.out.println("FILE NOT EXISTS");
+            } else System.out.println("TEX NULL");
 
-            if (file2 == null || !file2.exists()) { //Default to steve
+            if (skin == null) { //Default to steve
                 iresource = Minecraft.getMinecraft().getResourceManager().getResource(defaultSkinLegacy);
                 inputstream = iresource.getInputStream();
-            } else {
-                inputstream = new FileInputStream(file2);
+                skin = TextureUtil.readBufferedImage(inputstream);
+                if (skin == null) {
+                    System.out.println("Error loading skin");
+                    return false;
+                }
             }
-            BufferedImage bufferedimage = TextureUtil.readBufferedImage(inputstream);
-            if (bufferedimage == null) return;
-            if (bufferedimage.getWidth() != 64 || bufferedimage.getHeight() != 64)
-                return;
+            iresource = Minecraft.getMinecraft().getResourceManager().getResource(new ResourceLocation("textures/models/armor/diamond_layer_1.png"));
+            inputstream = iresource.getInputStream();
+            BufferedImage armour = TextureUtil.readBufferedImage(inputstream);
+
             float seed = ThreadLocalRandom.current().nextFloat();
-            for (BodyPart bodyPart : partList) {
-                for (int j = 0; j < bodyPart.width; j++) {
-                    for (int k = 0; k < bodyPart.height; k++) {
-                        int rawColor = bufferedimage.getRGB(bodyPart.texX + j, bodyPart.texY + k);
-                        int red = (rawColor >> 16) & 0xFF;
-                        int green = (rawColor >> 8) & 0xFF;
-                        int blue = (rawColor) & 0xFF;
-                        double scale = 0.0625F;
+            for (int a = 0; a < 1; a++) {
+                for (BodyPart bodyPart : partList) {
+                    for (int j = 0; j < bodyPart.width; j++) {
+                        for (int k = 0; k < bodyPart.height; k++) {
+                            BufferedImage image = skin;
+                            if (a > 0) {
+                                image = armour;
+                                System.out.println("Swapping to armour: " + armour.getWidth() + " " + armour.getHeight());
+                            }
+                            int x = bodyPart.texX + j;
+                            int y1 = bodyPart.texY + k;
+                            if (y1 >= image.getHeight())
+                                continue;
+                            int rawColor = image.getRGB(x, y1);
+                            int alpha = (rawColor >> 24) & 0xFF;
+                            if (alpha == 0)
+                                continue;
 
-                        Pos relCoords = bodyPart.getCoords(j, k);
-                        //Adjust because our model system is centered around top left of head and we want to center around center of chest
-                        relCoords.add(.22 * 1 / scale, 1.95 * 1 / scale, .22 * 1 / scale);
-                        relCoords.rotate(0, (float) Math.toRadians(-player.rotationYaw), 0);
+                            int red = (rawColor >> 16) & 0xFF;
+                            int green = (rawColor >> 8) & 0xFF;
+                            int blue = (rawColor) & 0xFF;
+                            double scale = 0.0625F;
 
-                        double xCoord = relCoords.x;
-                        double yCoord = relCoords.y;
-                        double zCoord = relCoords.z;
+                            Pos relCoords = bodyPart.getCoords(j, k);
+                            int tmpLayer = a > 0 ? a + 1 : 0;
+
+                            if (bodyPart.part == 0) {
+                                int offset = bodyPart.side % 2 == 0 ? tmpLayer : -tmpLayer;
+                                double xMult = 1;
+                                double yMult = 1;
+                                double zMult = 1;
+
+                                double xOff = 0;
+                                double yOff = 0;
+                                double zOff = 0;
+                                if (floorEven(bodyPart.side) == 0) {
+                                    zOff = offset;
+                                    xMult += (double) tmpLayer / 4D;
+                                    yMult += (double) tmpLayer / 4D;
+                                } else if (floorEven(bodyPart.side) == 2) {
+                                    yOff = offset;
+                                    xMult += (double) tmpLayer / 4D;
+                                    zMult += (double) tmpLayer / 4D;
+                                } else if (floorEven(bodyPart.side) == 4) {
+                                    xOff = offset;
+                                    yMult += (double) tmpLayer / 4D;
+                                    zMult += (double) tmpLayer / 4D;
+                                }
 
 
-                        createPixel(
-                                player.posX + xCoord * scale,
-                                player.posY + yCoord * scale,
-                                player.posZ + zCoord * scale,
-                                red,
-                                green,
-                                blue,
-                                255,
-                                xCoord,
-                                yCoord,
-                                zCoord,
-                                seed);
+                                relCoords.add(xOff, yOff, zOff);
+
+                                int part = bodyPart.part;
+                                Pos pos = locationPos.get(floorEven(part));
+                                if (part % 2 != 0)
+                                    pos.invert();
+                                if (pos == null) {
+                                    System.out.println("BAD THINGS ON " + part);
+                                    continue;
+                                }
+
+                                relCoords.add(-pos.x, -pos.y, -pos.z);
+                                relCoords.multiply(xMult, yMult, zMult);
+                                relCoords.add(pos.x, pos.y, pos.z);
+                            }
+                            //Adjust because our model system is centered around top left of head and we want to center around center of chest
+                            relCoords.add(.22 * 1 / scale, 1.95 * 1 / scale, .22 * 1 / scale);
+                            relCoords.rotate(0, (float) Math.toRadians(-player.rotationYaw), 0);
+
+                            double xCoord = relCoords.x;
+                            double yCoord = relCoords.y;
+                            double zCoord = relCoords.z;
+
+                            double y = 0;
+                            for (int i = 0; i < player.posY; i++) {
+                                if (!player.worldObj.isAirBlock(new BlockPos(player.posX, i, player.posZ)) && player.worldObj.isAirBlock(new BlockPos(player.posX, i + 1, player.posZ))) {
+                                    y = i + 1;
+                                }
+                            }
+                            createPixel(
+                                    player.posX + xCoord * scale,
+                                    y + yCoord * scale,
+                                    player.posZ + zCoord * scale,
+                                    red,
+                                    green,
+                                    blue,
+                                    255,
+                                    xCoord,
+                                    yCoord,
+                                    zCoord,
+                                    seed,
+                                    tmpLayer);
+                        }
                     }
                 }
             }
 
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
-    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ, float seed) {
-        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ, seed));
+    private int floorEven(int input) {
+        return input % 2 == 0 ? input : input - 1;
+    }
+
+    private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ, float seed, int layer) {
+        dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ, seed, layer));
     }
 
     @SubscribeEvent
@@ -219,6 +373,16 @@ public class ThanosMod {
 
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
+        generate();
+        if (Keyboard.isKeyDown(Keyboard.KEY_P)) {
+            dustBoxes.clear();
+            dust(Minecraft.getMinecraft().thePlayer);
+        }
+        if (snapping)
+            snapTime += .05;
+        if (snapTime > 2.0) {
+            snapping = false;
+        }
         dustBoxes.removeIf(DustBox::onUpdate);
         Set<UUID> remove = new HashSet<>();
         for (UUID uuid : renderBlacklist.keySet()) {
@@ -278,6 +442,7 @@ public class ThanosMod {
         MinecraftForge.EVENT_BUS.register(this);
         ClientCommandHandler.instance.registerCommand(new CommandThanosMod());
         ClientCommandHandler.instance.registerCommand(new CommandDust());
+        ClientCommandHandler.instance.registerCommand(new CommandSnap());
     }
 
     @EventHandler
@@ -322,10 +487,28 @@ public class ThanosMod {
         }
     }
 
+    public void snap() {
+        snapping = true;
+        snapTime = .01;
+    }
+
+    @SubscribeEvent
+    public void renderTick(TickEvent.RenderTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        if (snapping) {
+            double a = .5 * snapTime;
+            int mag = (int) Math.min(255, 255 * Math.abs(Math.pow(2, -a)));
+            ScaledResolution scaledResolution = new ScaledResolution(Minecraft.getMinecraft());
+            Gui.drawRect(0, 0, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight(), new Color(255, 255, 255, mag).getRGB());
+        }
+    }
 
     class BodyPart {
+        public final int side;
+        public final int part;
         private int texX, texY, width, height; //Texture locations in MC skin
-
         private double startX;
         private double startY;
         private double startZ;
@@ -333,7 +516,7 @@ public class ThanosMod {
         private double endY;
         private double endZ;
 
-        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ) {
+        public BodyPart(int texX, int texY, int width, int height, double startX, double startY, double startZ, double endX, double endY, double endZ, int side, int part) {
             this.texX = texX;
             this.texY = texY;
             this.width = width;
@@ -344,6 +527,8 @@ public class ThanosMod {
             this.endX = endX;
             this.endY = endY;
             this.endZ = endZ;
+            this.side = side;
+            this.part = part;
         }
 
 
