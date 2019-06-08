@@ -1,5 +1,6 @@
-package club.sk1er.mods.thanos;
+package club.sk1er.mods.thanos.screen;
 
+import club.sk1er.mods.thanos.ThanosMod;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.EnumChatFormatting;
@@ -8,9 +9,7 @@ import net.minecraftforge.fml.client.config.GuiSlider;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-import static net.minecraft.util.EnumChatFormatting.AQUA;
-import static net.minecraft.util.EnumChatFormatting.RED;
-import static net.minecraft.util.EnumChatFormatting.YELLOW;
+import static net.minecraft.util.EnumChatFormatting.*;
 
 public class ThanosModGui extends GuiScreen {
 
@@ -29,9 +28,7 @@ public class ThanosModGui extends GuiScreen {
                 append.append(EnumChatFormatting.GREEN).append("Enabled");
             else append.append(RED).append("Disabled");
             guiButton.displayString = append.toString();
-        }, guiButton -> {
-            instance.enabled = !instance.enabled;
-        });
+        }, guiButton -> instance.enabled = !instance.enabled);
 
         reg(new GuiButton(++id, width / 2 - 100, 25, "MODE"), guiButton -> {
             StringBuilder append = new StringBuilder().append(EnumChatFormatting.YELLOW).append("Mode: ");
@@ -43,7 +40,7 @@ public class ThanosModGui extends GuiScreen {
                 append.append("Twirl");
             } else if (mode == 2) {
                 append.append("Scatter");
-            } else if(mode ==3) {
+            } else if (mode == 3) {
                 append.append("Explode");
             }
             guiButton.displayString = append.toString();
@@ -52,12 +49,10 @@ public class ThanosModGui extends GuiScreen {
             if (instance.MODE > 3)
                 instance.MODE = 0;
         });
-        regSlider(new GuiSlider(++id, width / 2 - 100, 47, 200, 20, YELLOW + "Dust Render Distance: " + AQUA, "", 1, 64, instance.RENDER_DISTANCE, false, true, slider -> {
-            instance.RENDER_DISTANCE = slider.getValueInt();
-        }));
-        regSlider(new GuiSlider(++id, width / 2 - 100, 69, 200, 20, YELLOW + "Animation Start Distance: " + AQUA, "", 1, 64, instance.DISTANCE, false, true, slider -> {
-            instance.DISTANCE = slider.getValueInt();
-        }));
+        regSlider(new GuiSlider(++id, width / 2 - 100, 47, 200, 20, YELLOW + "Dust Render Distance: " + AQUA, "", 1, 64, instance.RENDER_DISTANCE, false, true,
+                slider -> instance.RENDER_DISTANCE = slider.getValueInt()));
+        regSlider(new GuiSlider(++id, width / 2 - 100, 69, 200, 20, YELLOW + "Animation Start Distance: " + AQUA, "", 1, 64, instance.DISTANCE, false, true,
+                slider -> instance.DISTANCE = slider.getValueInt()));
         reg(new GuiButton(++id, width / 2 - 100, 69 + 22, "BLENDING"), guiButton -> {
             StringBuilder append = new StringBuilder().append(EnumChatFormatting.YELLOW).append("Blending: ");
             append.append(AQUA);
@@ -65,12 +60,9 @@ public class ThanosModGui extends GuiScreen {
                 append.append("Higher Quality");
             } else append.append("Higher Performance");
             guiButton.displayString = append.toString();
-        }, guiButton -> {
-            instance.blending = !instance.blending;
-        });
-        regSlider(new GuiSlider(++id, width / 2 - 100, 69 + 44, 200, 20, YELLOW + "Speed: " + AQUA, "", .5D, 2D, instance.speed, true, true, slider -> {
-            instance.speed = slider.getValue();
-        }));
+        }, guiButton -> instance.blending = !instance.blending);
+        regSlider(new GuiSlider(++id, width / 2 - 100, 69 + 44, 200, 20, YELLOW + "Speed: " + AQUA, "", .5D, 2D, instance.speed, true, true,
+                slider -> instance.speed = slider.getValue()));
     }
 
     @Override

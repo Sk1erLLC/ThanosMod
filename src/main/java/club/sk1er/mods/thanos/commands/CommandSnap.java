@@ -1,14 +1,12 @@
-package club.sk1er.mods.thanos;
+package club.sk1er.mods.thanos.commands;
 
+import club.sk1er.mods.thanos.ThanosMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,9 +28,8 @@ public class CommandSnap extends CommandBase {
         return "/snap";
     }
 
-
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) {
         WorldClient theWorld = Minecraft.getMinecraft().theWorld;
         List<EntityPlayer> list = new ArrayList<>(theWorld.playerEntities);
         Collections.shuffle(list);
@@ -46,10 +43,5 @@ public class CommandSnap extends CommandBase {
             }
         }
         ThanosMod.instance.snap();
-    }
-
-    private void sendMessage(String chat, ICommandSender sender) {
-        String prefix = EnumChatFormatting.RED + "[" + EnumChatFormatting.AQUA + "Thanos Mod" + EnumChatFormatting.RED + "]" + EnumChatFormatting.YELLOW + ": ";
-        sender.addChatMessage(new ChatComponentText(prefix + chat));
     }
 }

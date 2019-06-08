@@ -22,8 +22,8 @@ public class DustBox {
     private double randomValOne = Math.random();
     private double randomValTwo = Math.random();
     private double randomValueThree = Math.random();
-    private float targetColorBrightness = 0;
-    private float seed = 0;
+    private float targetColorBrightness;
+    private float seed;
     private int layer;
 
     public DustBox(float particleRed, float particleGreen, float particleBlue, float particleAlpha, double posX, double posY, double posZ, double origPosX, double origPosY, double origPosZ, float seed, int layer) {
@@ -63,7 +63,7 @@ public class DustBox {
             return false;
 
         float duration = 15; //Period of animation in seconds
-        double state = 0;
+        double state;
 
         double percent = (age - wait) / (duration * 20);
         ThanosMod instance = ThanosMod.instance;
@@ -110,7 +110,7 @@ public class DustBox {
             this.posY += Math.random() / 200 * state * state;
             this.posZ += Math.random() / 200 * state * state * (zMult);
         } else if (mode == 3) {
-            double mag = 0;
+            double mag;
             if (state < 1) {
                 mag = -state;
             } else {
@@ -161,7 +161,7 @@ public class DustBox {
         double f5 = ((float) (this.prevPosX + (this.posX - this.prevPosX) * partialTicks)) - renderManager.renderPosX;
         double f6 = ((float) (this.prevPosY + (this.posY - this.prevPosY) * partialTicks)) - renderManager.renderPosY;
         double f7 = ((float) (this.prevPosZ + (this.posZ - this.prevPosZ) * partialTicks)) - renderManager.renderPosZ;
-        BlockPos blockPos = new BlockPos(f5+renderManager.viewerPosX, f6+renderManager.viewerPosY, f7+renderManager.viewerPosZ);
+        BlockPos blockPos = new BlockPos(f5 + renderManager.viewerPosX, f6 + renderManager.viewerPosY, f7 + renderManager.viewerPosZ);
         Vec3i to = new Vec3i(renderManager.viewerPosX, renderManager.viewerPosY, renderManager.viewerPosZ);
         double v = blockPos.distanceSq(to);
         if (v > ThanosMod.instance.RENDER_DISTANCE * ThanosMod.instance.RENDER_DISTANCE) {

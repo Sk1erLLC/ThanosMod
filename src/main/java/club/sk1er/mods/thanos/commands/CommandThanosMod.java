@@ -1,8 +1,11 @@
-package club.sk1er.mods.thanos;
+package club.sk1er.mods.thanos.commands;
 
+import club.sk1er.mods.thanos.ThanosMod;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
+
+import java.util.Collections;
+import java.util.List;
 
 public class CommandThanosMod extends CommandBase {
     @Override
@@ -21,7 +24,12 @@ public class CommandThanosMod extends CommandBase {
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) {
         ThanosMod.instance.openGui = true;
+    }
+
+    @Override
+    public List<String> getCommandAliases() {
+        return Collections.singletonList("thanos");
     }
 }

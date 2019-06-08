@@ -1,6 +1,5 @@
 package club.sk1er.mods.thanos.forge;
 
-
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.launchwrapper.IClassTransformer;
@@ -12,11 +11,9 @@ import org.objectweb.asm.tree.ClassNode;
 
 import java.util.Collection;
 
-
 public final class ClassTransformer implements IClassTransformer {
 
     private static final Logger LOGGER = LogManager.getLogger("ASM");
-
 
     private final Multimap<String, ThanosTransformer> transformerMap = ArrayListMultimap.create();
 
@@ -25,13 +22,11 @@ public final class ClassTransformer implements IClassTransformer {
 
     }
 
-
     private void registerTransformer(ThanosTransformer transformer) {
         for (String cls : transformer.getClassNames()) {
             this.transformerMap.put(cls, transformer);
         }
     }
-
 
     @Override
     public byte[] transform(String name, String transformedName, byte[] bytes) {

@@ -1,9 +1,9 @@
-package club.sk1er.mods.thanos;
+package club.sk1er.mods.thanos.commands;
 
+import club.sk1er.mods.thanos.ThanosMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
@@ -35,12 +35,12 @@ public class CommandDust extends CommandBase {
     /**
      * Returns String array containing all player usernames in the server.
      */
-    protected String[] getListOfPlayerUsernames() {
+    private String[] getListOfPlayerUsernames() {
         return Minecraft.getMinecraft().theWorld.playerEntities.stream().map(EntityPlayer::getName).toArray(String[]::new);
     }
 
     @Override
-    public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+    public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 1) {
             WorldClient theWorld = Minecraft.getMinecraft().theWorld;
             String seed = args[0];

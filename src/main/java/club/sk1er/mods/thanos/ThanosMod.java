@@ -1,5 +1,9 @@
 package club.sk1er.mods.thanos;
 
+import club.sk1er.mods.thanos.commands.CommandDust;
+import club.sk1er.mods.thanos.commands.CommandSnap;
+import club.sk1er.mods.thanos.commands.CommandThanosMod;
+import club.sk1er.mods.thanos.screen.ThanosModGui;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
@@ -7,8 +11,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.IResource;
@@ -31,19 +33,14 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
 
-import java.awt.Color;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Mod(modid = ThanosMod.MODID, version = ThanosMod.VERSION)
@@ -52,6 +49,8 @@ public class ThanosMod {
     public static final String VERSION = "1.0";
     public static ThanosMod instance;
     public HashMap<UUID, Integer> renderBlacklist = new HashMap<>();
+    private List<UUID> realEntity = new ArrayList<>();
+    private HashMap<UUID, Integer> timeCheck = new HashMap<>();
     public int DISTANCE = 16;
     public int MODE = 2;
     public boolean enabled = true;
@@ -204,9 +203,13 @@ public class ThanosMod {
                 dust(((EntityPlayer) entity));
         }
     }
+
     private float seed;
 
     public boolean dust(EntityPlayer player) {
+        if (!realEntity.contains(player.getUniqueID())) {
+            return false;
+        }
 
         Long aLong = cancel.get(player.getUniqueID());
         if (aLong != null && System.currentTimeMillis() - aLong < 1000) {
@@ -214,13 +217,13 @@ public class ThanosMod {
         }
         cancel.put(player.getUniqueID(), System.currentTimeMillis());
         ResourceLocation defaultSkinLegacy = DefaultPlayerSkin.getDefaultSkinLegacy();
-        InputStream inputstream = null;
-        IResource iresource = null;
+        InputStream inputstream;
+        IResource iresource;
         try {
             SkinManager skinManager = Minecraft.getMinecraft().getSkinManager();
             Map<MinecraftProfileTexture.Type, MinecraftProfileTexture> textures = skinManager.sessionService.getTextures(player.getGameProfile(), false);
             MinecraftProfileTexture minecraftProfileTexture = textures.get(MinecraftProfileTexture.Type.SKIN);
-            File file2 = null;
+            File file2;
             BufferedImage skin = null;
 
             if (minecraftProfileTexture != null) {
@@ -304,10 +307,6 @@ public class ThanosMod {
         return true;
     }
 
-    private int floorEven(int input) {
-        return input % 2 == 0 ? input : input - 1;
-    }
-
     private void createPixel(double x, double y, double z, int red, int green, int blue, int alpha, double origPosX, double origPosY, double origPosZ, float seed, int layer) {
         dustBoxes.add(new DustBox(red / 255F, green / 255F, blue / 255F, alpha / 255F, x, y, z, origPosX, origPosY, origPosZ, seed, layer));
     }
@@ -327,6 +326,22 @@ public class ThanosMod {
 //            dustBoxes.clear();
 //            dust(Minecraft.getMinecraft().thePlayer);
 //        }
+
+        if (!Minecraft.getMinecraft().isGamePaused() && Minecraft.getMinecraft().thePlayer != null && Minecraft.getMinecraft().theWorld != null) {
+            // for loop checks for if it's an actual player, or if it's a watchdog-like entity
+            for (EntityPlayer entityPlayer : Minecraft.getMinecraft().theWorld.playerEntities) {
+                if (!realEntity.contains(entityPlayer.getUniqueID())) {
+                    if (!timeCheck.containsKey(entityPlayer.getUniqueID()))
+                        timeCheck.put(entityPlayer.getUniqueID(), 0);
+                    int old = timeCheck.get(entityPlayer.getUniqueID());
+                    if (old > 100) {
+                        if (!realEntity.contains(entityPlayer.getUniqueID()))
+                            realEntity.add(entityPlayer.getUniqueID());
+                    } else if (!entityPlayer.isInvisibleToPlayer(Minecraft.getMinecraft().thePlayer))
+                        timeCheck.put(entityPlayer.getUniqueID(), old + 1);
+                }
+            }
+        }
 
         if (snapping)
             snapTime += .05;
@@ -362,8 +377,6 @@ public class ThanosMod {
     @SubscribeEvent
     public void renderWorld(RenderWorldLastEvent event) {
         GlStateManager.pushMatrix();
-        Tessellator instance = Tessellator.getInstance();
-        WorldRenderer worldRenderer = instance.getWorldRenderer();
         GlStateManager.disableCull();
         if (blending) {
             GlStateManager.enableAlpha();
@@ -556,10 +569,6 @@ public class ThanosMod {
             x += xCoord;
             y += yCoord;
             z += zCoord;
-        }
-
-        public void invert() {
-            multiply(-1, -1, -1);
         }
 
         public void multiply(double xMult, double yMult, double zMult) {
