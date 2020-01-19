@@ -1,16 +1,18 @@
 [
-{
-  "modid": "thanosmod",
-  "name": "Thanos Mod",
-  "description": "Become Thanos. Dust people at will.",
-  "version": "${version}",
-  "mcversion": "${mcversion}",
-  "url": "",
-  "updateUrl": "",
-  "authorList": ["Sk1er"],
-  "credits": "Marvel",
-  "logoFile": "",
-  "screenshots": [],
-  "dependencies": []
-}
+  {
+    "modid": "thanosmod",
+    "name": "Thanos Mod",
+    "description": "Become Thanos. Dust people at will.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "Sk1er"
+    ],
+    "credits": "Marvel",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
 ]
